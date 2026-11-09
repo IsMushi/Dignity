@@ -1,0 +1,503 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #143768;
+  --color-brand: #094197;
+  --color-brand-soft: #2f6fbd;
+  --color-muted: #5f7186;
+  --color-line: #e1e9f3;
+  --color-copper: #a05c1e;
+}
+
+@theme inline {
+  --font-sans: var(--font-google-sans);
+  --font-mono: var(--font-google-sans-code);
+}
+
+:root {
+  color-scheme: light;
+
+  /*
+    Glass material. The user's Glass level (0-100) drives every value, so the
+    same classes work from Solid (no blur, near-opaque) to Liquid (clear pane
+    with a bright rim, like real optical glass). The curve is gentle until 60
+    so the default stays readable, then opens up sharply for the last stretch.
+  */
+  --glass-level: 55;
+  --glass-blur: calc(var(--glass-level) * 0.34px); /* 0 → 34px */
+  --glass-saturate: calc(1 + var(--glass-level) * 0.01); /* 1 → 2 */
+  --glass-tint: calc(
+    0.92 - min(var(--glass-level), 60) * 0.0026 -
+      max(var(--glass-level) - 60, 0) * 0.0156
+  ); /* 0.92 → 0.14 */
+  --glass-tint-soft: calc(
+    0.78 - min(var(--glass-level), 60) * 0.0022 -
+      max(var(--glass-level) - 60, 0) * 0.0147
+  ); /* 0.78 → 0.06 */
+  --glass-bar: calc(
+    0.96 - min(var(--glass-level), 60) * 0.0018 -
+      max(var(--glass-level) - 60, 0) * 0.0093
+  ); /* 0.96 → 0.48 */
+  --glass-edge: calc(0.96 - var(--glass-level) * 0.0008); /* 0.96 → 0.88 */
+  --glass-sheen: calc(0.08 + var(--glass-level) * 0.0042); /* 0.08 → 0.50 */
+  --ambient-strength: calc(0.35 + var(--glass-level) * 0.0065); /* 0.35 → 1 */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  min-height: 100dvh;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background-color: #eaf2fb;
+  background-image:
+    radial-gradient(1200px 700px at 8% -12%, #f7fbff 0%, rgba(247, 251, 255, 0) 60%),
+    radial-gradient(900px 600px at 94% -6%, #e3eefb 0%, rgba(227, 238, 251, 0) 56%),
+    linear-gradient(166deg, #f4f9ff 0%, #e9f2fb 46%, #dbe7f5 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    112deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.42) 46%,
+    transparent 60%
+  );
+}
+
+::selection {
+  background: rgba(9, 65, 151, 0.16);
+}
+
+/*
+  Component classes live in the components layer so Tailwind utilities
+  (position: fixed/sticky, etc.) can still override them.
+*/
+@layer components {
+  /* ---------- Liquid glass ---------- */
+
+  .glass {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        120% 90% at 8% -18%,
+        rgb(255 255 255 / var(--glass-sheen)) 0%,
+        rgb(255 255 255 / 0) 58%
+      ),
+      linear-gradient(
+        155deg,
+        rgb(255 255 255 / var(--glass-tint)) 0%,
+        rgb(255 255 255 / var(--glass-tint-soft)) 55%,
+        rgb(255 255 255 / max(calc(var(--glass-tint-soft) - 0.04), 0.06))
+          100%
+      );
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      inset 0 -20px 30px -26px rgba(20, 55, 104, 0.2),
+      0 24px 60px -42px rgba(20, 55, 104, 0.55);
+  }
+
+  .glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      145deg,
+      rgb(255 255 255 / var(--glass-edge)) 0%,
+      rgba(255, 255, 255, 0.18) 42%,
+      rgb(255 255 255 / calc(var(--glass-edge) * 0.7)) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .glass-soft {
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.62) 0%,
+      rgba(255, 255, 255, 0.34) 100%
+    );
+    backdrop-filter: blur(18px) saturate(1.4);
+  }
+
+  .glass.glass-bar {
+    background:
+      radial-gradient(
+        120% 120% at 12% -32%,
+        rgb(255 255 255 / calc(var(--glass-sheen) + 0.12)) 0%,
+        rgb(255 255 255 / 0) 60%
+      ),
+      linear-gradient(
+        160deg,
+        rgb(255 255 255 / var(--glass-bar)) 0%,
+        rgb(255 255 255 / max(calc(var(--glass-bar) - 0.04), 0.1)) 100%
+      );
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.1))
+      saturate(var(--glass-saturate));
+  }
+
+  /* ---------- Solid data surfaces ---------- */
+
+  .card {
+    background: #ffffff;
+    border: 1px solid rgba(20, 55, 104, 0.08);
+    border-radius: 18px;
+    box-shadow:
+      0 1px 2px rgba(20, 55, 104, 0.04),
+      0 20px 44px -36px rgba(20, 55, 104, 0.35);
+  }
+
+  .card-hover {
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease,
+      border-color 220ms ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(9, 65, 151, 0.18);
+    box-shadow:
+      0 2px 4px rgba(20, 55, 104, 0.05),
+      0 26px 50px -34px rgba(20, 55, 104, 0.42);
+  }
+
+  /* ---------- Soft overview surfaces ---------- */
+
+  /* Data surfaces stay near-opaque: glass is for the shell, not the numbers. */
+  .card-soft {
+    background:
+      radial-gradient(
+        120% 120% at 100% 0%,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0) 58%
+      ),
+      linear-gradient(
+        148deg,
+        rgb(250 253 255 / 0.94) 0%,
+        rgb(240 247 255 / 0.91) 48%,
+        rgb(230 241 252 / 0.88) 100%
+      );
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 22px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 18px 44px -36px rgba(20, 55, 104, 0.45);
+  }
+
+  .card-kpi {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        95% 75% at 6% -14%,
+        rgb(255 255 255 / var(--glass-sheen)) 0%,
+        rgb(255 255 255 / 0) 56%
+      ),
+      radial-gradient(
+        120% 150% at 88% 0%,
+        rgb(255 255 255 / calc(var(--glass-tint) + 0.1)) 0%,
+        rgb(255 255 255 / 0) 55%
+      ),
+      linear-gradient(
+        138deg,
+        rgb(246 251 255 / var(--glass-tint)) 0%,
+        rgb(231 241 253 / var(--glass-tint-soft)) 46%,
+        rgb(213 230 249 / max(calc(var(--glass-tint-soft) - 0.04), 0.05))
+          100%
+      );
+    border: 1px solid rgb(255 255 255 / var(--glass-edge));
+    border-radius: 24px;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      inset 0 -22px 32px -26px rgba(20, 55, 104, 0.22),
+      0 26px 54px -40px rgba(20, 55, 104, 0.55);
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.15))
+      saturate(var(--glass-saturate));
+  }
+
+  .card-kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      85% 120% at 100% 100%,
+      var(--kpi-glow, transparent) 0%,
+      transparent 62%
+    );
+    opacity: var(--kpi-glow-strength, 0);
+  }
+
+  .card-kpi-sales {
+    --kpi-glow: #2f6fbd;
+    --kpi-glow-strength: 0.12;
+  }
+
+  .card-kpi-credit {
+    --kpi-glow: #a05c1e;
+    --kpi-glow-strength: 0.14;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / var(--glass-edge));
+    background: rgb(255 255 255 / calc(var(--glass-tint) + 0.02));
+    padding: 0.3rem 0.65rem;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--color-ink);
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.55))
+      saturate(var(--glass-saturate));
+    transition:
+      background 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .chip:hover {
+    background: rgb(255 255 255 / calc(var(--glass-tint) + 0.14));
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.025em;
+  }
+
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 5px;
+    border: 1px solid rgba(20, 55, 104, 0.12);
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 55, 104, 0.2) transparent;
+  }
+
+  .scroll-thin::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .scroll-thin::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(20, 55, 104, 0.18);
+  }
+
+  /* Glass level control */
+  .glass-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 22px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .glass-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: linear-gradient(90deg, #dbe7f5 0%, #7fb2e5 55%, #094197 100%);
+  }
+
+  .glass-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border-radius: 50%;
+    border: 2px solid var(--color-brand);
+    background: #ffffff;
+    box-shadow: 0 2px 7px rgba(20, 55, 104, 0.3);
+  }
+
+  .glass-range::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: linear-gradient(90deg, #dbe7f5 0%, #7fb2e5 55%, #094197 100%);
+  }
+
+  .glass-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--color-brand);
+    background: #ffffff;
+    box-shadow: 0 2px 7px rgba(20, 55, 104, 0.3);
+  }
+
+  .glass-range:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 4px;
+    border-radius: 999px;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0) scale(1.06);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes donut-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ambient-field {
+  opacity: var(--ambient-strength);
+}
+
+.ambient-blob {
+  animation: ambient-drift 38s ease-in-out infinite alternate;
+}
+
+.ambient-blob:nth-child(2) {
+  animation-duration: 46s;
+  animation-delay: -12s;
+}
+
+.ambient-blob:nth-child(4) {
+  animation-duration: 52s;
+  animation-delay: -24s;
+}
+
+[data-glass="solid"] .glass,
+[data-glass="solid"] .card-kpi,
+[data-glass="solid"] .chip {
+  backdrop-filter: none;
+}
+
+[data-glass="solid"] .ambient-blob {
+  animation: none;
+}
+
+.bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 680ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+
+.donut-in {
+  animation: donut-in 620ms cubic-bezier(0.22, 0.61, 0.36, 1) 160ms backwards;
+}
+
+.swap-in {
+  animation: swap-in 220ms ease-out backwards;
+}
+
+/* ---------- Fallbacks ---------- */
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-soft,
+  .card-kpi,
+  .chip {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: none;
+  }
+
+  .ambient-blob {
+    animation: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .glass,
+  .glass-soft,
+  .card-kpi,
+  .chip {
+    background: rgba(255, 255, 255, 0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
