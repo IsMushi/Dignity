@@ -1,8 +1,12 @@
 import Image from "next/image";
 
 /**
- * Supplied 3D render of the glass wallet with the Bank of Kigali note and a
- * 100 FRW coin. White backdrop is knocked out visually with multiply.
+ * 3D render of the glass wallet with the Bank of Kigali note and the
+ * 100 FRW coin, knocked out to true transparency so the KPI glass
+ * shows through at every Glass level.
+ *
+ * `unoptimized`: the optimizer re-encodes to WebP and flattens the alpha
+ * channel onto white, which paints an opaque box over the glass.
  */
 export function CreditArt() {
   return (
@@ -11,8 +15,9 @@ export function CreditArt() {
         src="/assets/customer-credit-wallet.png"
         alt=""
         fill
+        unoptimized
         sizes="(min-width: 1280px) 340px, 42vw"
-        className="object-contain object-right-bottom mix-blend-multiply"
+        className="object-contain object-right-bottom drop-shadow-[0_10px_18px_rgba(20,55,104,0.18)]"
       />
     </div>
   );

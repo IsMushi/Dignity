@@ -81,7 +81,9 @@ npm run dev      # http://localhost:3000
 | Ink    | `#143768` | Headings, body text                |
 | Copper | `#a05c1e` | Stock and credit accents           |
 
-Glass is the **shell only** — top bar, rail, mobile nav, KPI cards, chips, and controls. Dense data surfaces (chart, table, lists) use a soft blue-white gradient and stay near-opaque so numbers remain high-contrast.
+Glass is the **shell** — top bar, rail, mobile nav, KPI cards, chips, and controls. Dense data surfaces (chart, table, lists) use a soft blue-white gradient: near-opaque at the default (55) so numbers stay high-contrast, then open up after 60 so full Liquid (100) is translucent everywhere, not just the shell.
+
+**Card artwork:** the supplied 3D renders in `public/assets/` (`net-sales-coins.png`, `customer-credit-wallet.png`) were knocked out to true transparency (border flood-fill) so the KPI glass shows through behind the coins/wallet. They are served `unoptimized` because the image optimizer re-encodes to WebP and flattens the alpha channel onto white, which paints an opaque box over the glass.
 
 ### Glass level
 
@@ -95,7 +97,7 @@ The Customize panel sets `--glass-level` (0–100) on `<html>`; every glass toke
 | Liquid   | 85–100| Near-clear optical glass with bright rim (reference)    |
 
 - **Persistence:** `dignity_glass` in both `localStorage` and a cookie; the root layout reads the cookie to set the initial level on first paint.
-- **Tokens:** `--glass-blur` (0→34px), `--glass-saturate` (1→2), `--glass-tint` / `--glass-tint-soft` / `--glass-bar`, `--glass-edge`, `--glass-sheen`, `--ambient-strength`.
+- **Tokens:** `--glass-blur` (0→34px), `--glass-saturate` (1→2), `--glass-tint` / `--glass-tint-soft` / `--glass-bar`, `--glass-edge`, `--glass-sheen`, `--glass-soft-tint` / `--glass-soft-tint-soft` / `--glass-soft-sheen` (data cards), `--ambient-strength`.
 - **Curve:** gentle until 60, then opens sharply so Liquid is genuinely clear.
 - **Fallbacks:** `data-glass="solid"`, reduced-transparency, and no-`backdrop-filter` all force solid surfaces.
 

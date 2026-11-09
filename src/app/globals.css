@@ -40,6 +40,17 @@
   ); /* 0.96 → 0.48 */
   --glass-edge: calc(0.96 - var(--glass-level) * 0.0008); /* 0.96 → 0.88 */
   --glass-sheen: calc(0.08 + var(--glass-level) * 0.0042); /* 0.08 → 0.50 */
+  --glass-soft-tint: calc(
+    0.95 - min(var(--glass-level), 60) * 0.001 -
+      max(var(--glass-level) - 60, 0) * 0.0125
+  ); /* 0.95 → 0.39 */
+  --glass-soft-tint-soft: calc(
+    0.91 - min(var(--glass-level), 60) * 0.0008 -
+      max(var(--glass-level) - 60, 0) * 0.012
+  ); /* 0.91 → 0.38 */
+  --glass-soft-sheen: calc(
+    0.95 - max(var(--glass-level) - 60, 0) * 0.0175
+  ); /* 0.95 → 0.25 */
   --ambient-strength: calc(0.35 + var(--glass-level) * 0.0065); /* 0.35 → 1 */
 }
 
@@ -186,25 +197,35 @@ body::before {
 
   /* ---------- Soft overview surfaces ---------- */
 
-  /* Data surfaces stay near-opaque: glass is for the shell, not the numbers. */
+  /*
+    Data surfaces: near-opaque at default so numbers stay readable, but the
+    tint opens up after 60 so full Liquid is genuinely translucent with the
+    ambient field showing through — glass everywhere at 100, not just the
+    shell.
+  */
   .card-soft {
+    position: relative;
+    isolation: isolate;
     background:
       radial-gradient(
         120% 120% at 100% 0%,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(255, 255, 255, 0) 58%
+        rgb(255 255 255 / var(--glass-soft-sheen)) 0%,
+        rgb(255 255 255 / 0) 58%
       ),
       linear-gradient(
         148deg,
-        rgb(250 253 255 / 0.94) 0%,
-        rgb(240 247 255 / 0.91) 48%,
-        rgb(230 241 252 / 0.88) 100%
+        rgb(250 253 255 / var(--glass-soft-tint)) 0%,
+        rgb(240 247 255 / var(--glass-soft-tint-soft)) 48%,
+        rgb(230 241 252 / max(calc(var(--glass-soft-tint-soft) - 0.03), 0.08))
+          100%
       );
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    border: 1px solid rgb(255 255 255 / var(--glass-edge));
     border-radius: 22px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
       0 18px 44px -36px rgba(20, 55, 104, 0.45);
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.8))
+      saturate(var(--glass-saturate));
   }
 
   .card-kpi {
@@ -439,6 +460,7 @@ body::before {
 
 [data-glass="solid"] .glass,
 [data-glass="solid"] .card-kpi,
+[data-glass="solid"] .card-soft,
 [data-glass="solid"] .chip {
   backdrop-filter: none;
 }
@@ -466,6 +488,7 @@ body::before {
   .glass,
   .glass-soft,
   .card-kpi,
+  .card-soft,
   .chip {
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: none;
@@ -480,6 +503,7 @@ body::before {
   .glass,
   .glass-soft,
   .card-kpi,
+  .card-soft,
   .chip {
     background: rgba(255, 255, 255, 0.96);
   }
