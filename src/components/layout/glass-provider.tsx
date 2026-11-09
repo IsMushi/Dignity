@@ -15,33 +15,14 @@ import {
   clampGlassLevel,
   parseGlassLevel,
 } from "@/lib/appearance";
-import { persistPreference, readCookie } from "@/lib/preferences";
+import { createPreferenceStore } from "@/lib/preferences";
 
-const listeners = new Set<() => void>();
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    listeners.delete(callback);
-    window.removeEventListener("storage", callback);
-  };
-}
-
-function getSnapshot(): number {
-  try {
-    const stored = parseGlassLevel(
-      window.localStorage.getItem(GLASS_STORAGE_KEY),
-    );
-    if (stored !== null) return stored;
-  } catch {
-    // Fall through to the cookie set for the server render.
-  }
-
-  const storedCookie = readCookie(GLASS_COOKIE);
-
-  return parseGlassLevel(storedCookie) ?? DEFAULT_GLASS_LEVEL;
-}
+const glassStore = createPreferenceStore({
+  storageKey: GLASS_STORAGE_KEY,
+  cookieName: GLASS_COOKIE,
+  parse: parseGlassLevel,
+  fallback: DEFAULT_GLASS_LEVEL,
+});
 
 type GlassContextValue = {
   glassLevel: number;
@@ -60,15 +41,13 @@ export function GlassProvider({
   const initial = clampGlassLevel(initialGlassLevel);
   const getServerSnapshot = useCallback(() => initial, [initial]);
   const glassLevel = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
+    glassStore.subscribe,
+    glassStore.getSnapshot,
     getServerSnapshot,
   );
 
   const setGlassLevel = useCallback((next: number) => {
-    const value = clampGlassLevel(next);
-    persistPreference(GLASS_STORAGE_KEY, GLASS_COOKIE, String(value));
-    listeners.forEach((listener) => listener());
+    glassStore.set(clampGlassLevel(next));
   }, []);
 
   useEffect(() => {

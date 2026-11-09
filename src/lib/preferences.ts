@@ -37,3 +37,56 @@ export function persistPreference(
     // The value still applies for this session.
   }
 }
+
+type PreferenceStore<T> = {
+  subscribe: (callback: () => void) => () => void;
+  getSnapshot: () => T;
+  set: (value: T) => void;
+};
+
+/**
+ * The three preference providers all need the same external-store shape:
+ * read `localStorage` first, fall back to the server-set cookie, notify every
+ * mounted provider when the value changes. One factory keeps that behaviour
+ * (and the `storage` event wiring) in one place.
+ */
+export function createPreferenceStore<T>({
+  storageKey,
+  cookieName,
+  parse,
+  fallback,
+}: {
+  storageKey: string;
+  cookieName: string;
+  parse: (value: string | null | undefined) => T | null;
+  fallback: T;
+}): PreferenceStore<T> {
+  const listeners = new Set<() => void>();
+
+  const subscribe = (callback: () => void) => {
+    listeners.add(callback);
+    window.addEventListener("storage", callback);
+    return () => {
+      listeners.delete(callback);
+      window.removeEventListener("storage", callback);
+    };
+  };
+
+  const getSnapshot = (): T => {
+    try {
+      const stored = parse(window.localStorage.getItem(storageKey));
+      if (stored !== null) return stored;
+    } catch {
+      // Fall through to the cookie set for the server render.
+    }
+
+    return parse(readCookie(cookieName)) ?? fallback;
+  };
+
+  const set = (value: T) => {
+    persistPreference(storageKey, cookieName, String(value));
+    listeners.forEach((listener) => listener());
+  };
+
+  return { subscribe, getSnapshot, set };
+}

@@ -10,33 +10,18 @@ import {
 import {
   LAYOUT_COOKIE,
   LAYOUT_STORAGE_KEY,
-  persistPreference,
-  readCookie,
+  createPreferenceStore,
 } from "@/lib/preferences";
 
 export type LayoutMode = "topbar" | "sidebar";
 
-const listeners = new Set<() => void>();
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    listeners.delete(callback);
-    window.removeEventListener("storage", callback);
-  };
-}
-
-function getSnapshot(): LayoutMode {
-  try {
-    const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
-    if (stored === "sidebar" || stored === "topbar") return stored;
-  } catch {
-    // Fall through to the cookie set for the server render.
-  }
-
-  return readCookie(LAYOUT_COOKIE) === "sidebar" ? "sidebar" : "topbar";
-}
+const layoutStore = createPreferenceStore<LayoutMode>({
+  storageKey: LAYOUT_STORAGE_KEY,
+  cookieName: LAYOUT_COOKIE,
+  parse: (value) =>
+    value === "sidebar" || value === "topbar" ? value : null,
+  fallback: "topbar",
+});
 
 type LayoutContextValue = {
   layout: LayoutMode;
@@ -54,14 +39,13 @@ export function LayoutProvider({
 }) {
   const getServerSnapshot = useCallback(() => initialLayout, [initialLayout]);
   const layout = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
+    layoutStore.subscribe,
+    layoutStore.getSnapshot,
     getServerSnapshot,
   );
 
   const setLayout = useCallback((mode: LayoutMode) => {
-    persistPreference(LAYOUT_STORAGE_KEY, LAYOUT_COOKIE, mode);
-    listeners.forEach((listener) => listener());
+    layoutStore.set(mode);
   }, []);
 
   const value = useMemo(() => ({ layout, setLayout }), [layout, setLayout]);

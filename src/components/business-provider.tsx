@@ -17,33 +17,15 @@ import {
 import {
   BUSINESS_COOKIE,
   BUSINESS_STORAGE_KEY,
-  persistPreference,
-  readCookie,
+  createPreferenceStore,
 } from "@/lib/preferences";
 
-const listeners = new Set<() => void>();
-
-function subscribe(callback: () => void) {
-  listeners.add(callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    listeners.delete(callback);
-    window.removeEventListener("storage", callback);
-  };
-}
-
-function getSnapshot(): BusinessId {
-  try {
-    const stored = window.localStorage.getItem(BUSINESS_STORAGE_KEY);
-    if (isBusinessId(stored)) return stored;
-  } catch {
-    // Fall through to the cookie set for the server render.
-  }
-
-  const value = readCookie(BUSINESS_COOKIE);
-
-  return isBusinessId(value) ? value : defaultBusinessId;
-}
+const businessStore = createPreferenceStore<BusinessId>({
+  storageKey: BUSINESS_STORAGE_KEY,
+  cookieName: BUSINESS_COOKIE,
+  parse: (value) => (isBusinessId(value) ? value : null),
+  fallback: defaultBusinessId,
+});
 
 type BusinessContextValue = {
   business: Business;
@@ -65,15 +47,14 @@ export function BusinessProvider({
     [initialBusinessId],
   );
   const businessId = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
+    businessStore.subscribe,
+    businessStore.getSnapshot,
     getServerSnapshot,
   );
 
   const setBusiness = useCallback((id: BusinessId) => {
     if (!isBusinessId(id)) return;
-    persistPreference(BUSINESS_STORAGE_KEY, BUSINESS_COOKIE, id);
-    listeners.forEach((listener) => listener());
+    businessStore.set(id);
   }, []);
 
   const business =
