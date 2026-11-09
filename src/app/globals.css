@@ -3,7 +3,6 @@
 @theme {
   --color-ink: #143768;
   --color-brand: #094197;
-  --color-brand-soft: #2f6fbd;
   --color-muted: #5f7186;
   --color-line: #e1e9f3;
   --color-copper: #a05c1e;
@@ -24,7 +23,10 @@
     so the default stays readable, then opens up sharply for the last stretch.
   */
   --glass-level: 55;
-  --glass-blur: calc(var(--glass-level) * 0.34px); /* 0 → 34px */
+  --glass-blur: calc(
+    min(var(--glass-level), 60) * 0.32px -
+      max(var(--glass-level) - 60, 0) * 0.28px
+  ); /* 0 → 19.2px at Balanced → 8px at Liquid: clear pane, not the blurriest */
   --glass-saturate: calc(1 + var(--glass-level) * 0.01); /* 1 → 2 */
   --glass-tint: calc(
     0.92 - min(var(--glass-level), 60) * 0.0026 -
@@ -35,11 +37,16 @@
       max(var(--glass-level) - 60, 0) * 0.0147
   ); /* 0.78 → 0.06 */
   --glass-bar: calc(
-    0.96 - min(var(--glass-level), 60) * 0.0018 -
-      max(var(--glass-level) - 60, 0) * 0.0093
-  ); /* 0.96 → 0.48 */
+    0.96 - min(var(--glass-level), 60) * 0.002 -
+      min(max(var(--glass-level) - 60, 0), 25) * 0.0196 -
+      max(var(--glass-level) - 85, 0) * 0.0127
+  ); /* 0.96 → 0.85 at default → 0.35 at Liquid start → 0.16 */
   --glass-edge: calc(0.96 - var(--glass-level) * 0.0008); /* 0.96 → 0.88 */
-  --glass-sheen: calc(0.08 + var(--glass-level) * 0.0042); /* 0.08 → 0.50 */
+  --glass-sheen: calc(0.08 + min(var(--glass-level), 70) * 0.004); /* 0.08 → 0.36, capped */
+  --glass-panel: calc(
+    0.98 - min(var(--glass-level), 60) * 0.0015 -
+      max(var(--glass-level) - 60, 0) * 0.00675
+  ); /* 0.98 → 0.62: menus stay readable but glassy */
   --glass-soft-tint: calc(
     0.95 - min(var(--glass-level), 60) * 0.001 -
       max(var(--glass-level) - 60, 0) * 0.0125
@@ -144,15 +151,6 @@ body::before {
     pointer-events: none;
   }
 
-  .glass-soft {
-    background: linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.62) 0%,
-      rgba(255, 255, 255, 0.34) 100%
-    );
-    backdrop-filter: blur(18px) saturate(1.4);
-  }
-
   .glass.glass-bar {
     background:
       radial-gradient(
@@ -169,16 +167,34 @@ body::before {
       saturate(var(--glass-saturate));
   }
 
-  /* ---------- Solid data surfaces ---------- */
-
-  .card {
-    background: #ffffff;
-    border: 1px solid rgba(20, 55, 104, 0.08);
-    border-radius: 18px;
+  /*
+    Dropdown panels (Customize, business menu) float over live content, so
+    they carry a stronger tint than the shell while still picking up the
+    backdrop, blur and bright rim.
+  */
+  .glass-panel {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        120% 100% at 10% -24%,
+        rgb(255 255 255 / calc(var(--glass-sheen) + 0.14)) 0%,
+        rgb(255 255 255 / 0) 62%
+      ),
+      linear-gradient(
+        158deg,
+        rgb(255 255 255 / var(--glass-panel)) 0%,
+        rgb(255 255 255 / max(calc(var(--glass-panel) - 0.06), 0.32)) 100%
+      );
+    border: 1px solid rgb(255 255 255 / var(--glass-edge));
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.9))
+      saturate(var(--glass-saturate));
     box-shadow:
-      0 1px 2px rgba(20, 55, 104, 0.04),
-      0 20px 44px -36px rgba(20, 55, 104, 0.35);
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      0 30px 70px -30px rgba(20, 55, 104, 0.45);
   }
+
+  /* ---------- Solid data surfaces ---------- */
 
   .card-hover {
     transition:
@@ -459,6 +475,7 @@ body::before {
 }
 
 [data-glass="solid"] .glass,
+[data-glass="solid"] .glass-panel,
 [data-glass="solid"] .card-kpi,
 [data-glass="solid"] .card-soft,
 [data-glass="solid"] .chip {
@@ -486,7 +503,7 @@ body::before {
 
 @media (prefers-reduced-transparency: reduce) {
   .glass,
-  .glass-soft,
+  .glass-panel,
   .card-kpi,
   .card-soft,
   .chip {
@@ -501,7 +518,7 @@ body::before {
 
 @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
   .glass,
-  .glass-soft,
+  .glass-panel,
   .card-kpi,
   .card-soft,
   .chip {

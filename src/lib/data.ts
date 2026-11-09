@@ -12,8 +12,10 @@ export type IconKey =
   | "accounting"
   | "documents";
 
+export type BusinessId = "kivu-market" | "kigali-coffee" | "lakeview-pharmacy";
+
 export type Business = {
-  id: string;
+  id: BusinessId;
   name: string;
   kind: string;
   branch: string;
@@ -44,12 +46,19 @@ export const businesses: Business[] = [
   },
 ];
 
-export const defaultBusinessId = businesses[0].id;
+export const defaultBusinessId: BusinessId = businesses[0].id;
+
+const businessIds = new Set<string>(
+  businesses.map((business) => business.id),
+);
+
+export function isBusinessId(
+  value: string | null | undefined,
+): value is BusinessId {
+  return !!value && businessIds.has(value);
+}
 
 export const workspace = {
-  name: businesses[0].name,
-  kind: businesses[0].kind,
-  branch: businesses[0].branch,
   connected: true,
   user: { name: "Alex Morgan", initials: "AM", role: "Owner" },
   date: "Nov 9, 2026",
@@ -93,7 +102,7 @@ export const chartData = [
 
 export const paymentMix = [
   { label: "Cash", share: 60, count: 16, color: "#094197" },
-  { label: "Customer credit", share: 6, count: 2, color: "#b87333" },
+  { label: "Customer credit", share: 6, count: 2, color: "#a05c1e" },
   { label: "Mobile money", share: 34, count: 9, color: "#7fb2e5" },
 ];
 
@@ -136,8 +145,8 @@ export const recentSales = [
 ];
 
 export const lowStock = [
-  { name: "Olive oil", remaining: 3, capacity: 10 },
-  { name: "Oat cookies", remaining: 4, capacity: 10 },
+  { name: "Olive oil", remaining: 3 },
+  { name: "Oat cookies", remaining: 4 },
 ];
 
 export const businessApps: { label: string; icon: IconKey }[] = [
@@ -158,5 +167,9 @@ export const quickActions: { label: string; icon: IconKey }[] = [
 ];
 
 export function formatRwf(value: number) {
+  return value.toLocaleString("en-US");
+}
+
+export function formatCount(value: number) {
   return value.toLocaleString("en-US");
 }

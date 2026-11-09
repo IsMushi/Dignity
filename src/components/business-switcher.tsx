@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   Check,
   ChevronDown,
@@ -8,84 +8,24 @@ import {
   GitBranch,
 } from "lucide-react";
 import { useBusiness } from "@/components/business-provider";
-import { businesses } from "@/lib/data";
+import { businesses, type BusinessId } from "@/lib/data";
+import { useDismissableMenu } from "@/lib/use-dismissable-menu";
 
 type Variant = "bar" | "chip";
 
 export function BusinessSwitcher({ variant }: { variant: Variant }) {
   const { business, businessId, setBusiness } = useBusiness();
-  const [open, setOpen] = useState(false);
-  const [shown, setShown] = useState(false);
-  const closeTimer = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const closeMenu = useCallback(() => {
-    setShown(false);
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    closeTimer.current = window.setTimeout(
-      () => {
-        setOpen(false);
-        closeTimer.current = null;
-      },
-      reduced ? 0 : 160,
-    );
-  }, []);
-
-  const toggleMenu = () => {
-    if (open) {
-      closeMenu();
-      return;
-    }
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-    setOpen(true);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const frame = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-
-  useEffect(
-    () => () => {
-      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        closeMenu();
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeMenu();
-        triggerRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, closeMenu]);
+  const {
+    open,
+    shown,
+    close: closeMenu,
+    toggle: toggleMenu,
+    containerRef,
+  } = useDismissableMenu({
+    onEscape: () => triggerRef.current?.focus(),
+  });
 
   useEffect(() => {
     if (!open || !shown) return;
@@ -95,7 +35,7 @@ export function BusinessSwitcher({ variant }: { variant: Variant }) {
     selected?.focus();
   }, [open, shown]);
 
-  const select = (id: string) => {
+  const select = (id: BusinessId) => {
     setBusiness(id);
     closeMenu();
     triggerRef.current?.focus();
@@ -187,7 +127,7 @@ export function BusinessSwitcher({ variant }: { variant: Variant }) {
           role="menu"
           aria-label="Select business"
           onKeyDown={onMenuKeyDown}
-          className={`absolute left-0 top-full z-50 mt-2 w-[min(300px,calc(100vw-2rem))] origin-top-left rounded-2xl border border-line bg-white p-2 shadow-[0_30px_70px_-30px_rgba(20,55,104,0.45)] transition duration-150 ease-out ${
+          className={`glass-panel absolute left-0 top-full z-50 mt-2 w-[min(300px,calc(100vw-2rem))] origin-top-left rounded-2xl p-2 transition duration-150 ease-out ${
             shown
               ? "scale-100 opacity-100"
               : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
@@ -209,7 +149,7 @@ export function BusinessSwitcher({ variant }: { variant: Variant }) {
                 className={
                   active
                     ? "focus-ring flex w-full items-center gap-2.5 rounded-xl bg-brand/[0.06] px-2.5 py-2 text-left"
-                    : "focus-ring flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-[#f5f9ff]"
+                    : "focus-ring flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-white/60"
                 }
               >
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/10 text-[10.5px] font-bold text-brand">

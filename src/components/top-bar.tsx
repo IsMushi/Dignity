@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { Bell, Search } from "lucide-react";
 import { BusinessBranch, BusinessSwitcher } from "@/components/business-switcher";
+import { WorkspaceConnected } from "@/components/workspace-connected";
+import { workspace } from "@/lib/data";
 
 export function TopBar() {
   return (
@@ -23,10 +25,7 @@ export function TopBar() {
 
         <BusinessBranch className="hidden items-center gap-1.5 px-2 py-1 text-[12px] text-muted md:flex" />
 
-        <span className="hidden items-center gap-1.5 rounded-full border border-emerald-200/70 bg-emerald-50/70 px-2.5 py-1 text-[11px] font-medium text-emerald-700 xl:flex">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-          Workspace connected
-        </span>
+        <WorkspaceConnected className="hidden xl:inline-flex" />
 
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -55,7 +54,7 @@ export function TopBar() {
             aria-label="Account menu"
             className="focus-ring grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand to-[#3b82f6] text-[11px] font-semibold text-white"
           >
-            AM
+            {workspace.user.initials}
           </button>
         </div>
       </div>

@@ -7,7 +7,7 @@ export function PageHeader() {
     <div className="mt-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-[27px] font-semibold leading-none tracking-[-0.03em] text-ink sm:text-[31px]">
-          Welcome back, Alex.
+          Welcome back, {workspace.user.name.split(" ")[0]}.
         </h1>
 
         <div className="flex items-center gap-2">

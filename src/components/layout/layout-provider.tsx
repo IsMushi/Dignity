@@ -7,10 +7,15 @@ import {
   useMemo,
   useSyncExternalStore,
 } from "react";
+import {
+  LAYOUT_COOKIE,
+  LAYOUT_STORAGE_KEY,
+  persistPreference,
+  readCookie,
+} from "@/lib/preferences";
 
 export type LayoutMode = "topbar" | "sidebar";
 
-const STORAGE_KEY = "dignity:layout";
 const listeners = new Set<() => void>();
 
 function subscribe(callback: () => void) {
@@ -24,17 +29,13 @@ function subscribe(callback: () => void) {
 
 function getSnapshot(): LayoutMode {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
     if (stored === "sidebar" || stored === "topbar") return stored;
   } catch {
     // Fall through to the cookie set for the server render.
   }
 
-  return document.cookie
-    .split("; ")
-    .includes(`${STORAGE_KEY}=sidebar`)
-    ? "sidebar"
-    : "topbar";
+  return readCookie(LAYOUT_COOKIE) === "sidebar" ? "sidebar" : "topbar";
 }
 
 type LayoutContextValue = {
@@ -59,12 +60,7 @@ export function LayoutProvider({
   );
 
   const setLayout = useCallback((mode: LayoutMode) => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, mode);
-      document.cookie = `${STORAGE_KEY}=${mode}; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      // The preference still applies for this session.
-    }
+    persistPreference(LAYOUT_STORAGE_KEY, LAYOUT_COOKIE, mode);
     listeners.forEach((listener) => listener());
   }, []);
 

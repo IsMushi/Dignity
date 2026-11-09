@@ -15,6 +15,7 @@ export function CreditArt() {
         src="/assets/customer-credit-wallet.png"
         alt=""
         fill
+        priority
         unoptimized
         sizes="(min-width: 1280px) 340px, 42vw"
         className="object-contain object-right-bottom drop-shadow-[0_10px_18px_rgba(20,55,104,0.18)]"

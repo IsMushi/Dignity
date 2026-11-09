@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronDown, LayoutGrid } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { AppIcon } from "@/components/app-icon";
 import { useBusiness } from "@/components/business-provider";
-import { navItems } from "@/lib/data";
+import { businessApps, navItems, workspace } from "@/lib/data";
 
 export function AppRail() {
   const { business } = useBusiness();
@@ -57,22 +57,24 @@ export function AppRail() {
           href="#apps"
           className="focus-ring flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-ink/75 transition hover:bg-white/65 hover:text-brand"
         >
-          <LayoutGrid className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden="true" />
+          <AppIcon name="apps" className="h-[18px] w-[18px]" />
           <span>Apps</span>
           <span className="ml-auto rounded-md bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-muted">
-            7
+            {businessApps.length}
           </span>
         </a>
 
-        <div className="mt-6 rounded-2xl border border-white/70 bg-white/45 p-3.5">
-          <p className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-            Workspace connected
-          </p>
-          <p key={business.id} className="swap-in mt-2 text-[12px] leading-relaxed text-muted">
-            {business.name} is synced. Sales, stock and credit are up to date.
-          </p>
-        </div>
+        {workspace.connected ? (
+          <div className="mt-6 rounded-2xl border border-white/70 bg-white/45 p-3.5">
+            <p className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              Workspace connected
+            </p>
+            <p key={business.id} className="swap-in mt-2 text-[12px] leading-relaxed text-muted">
+              {business.name} is synced. Sales, stock and credit are up to date.
+            </p>
+          </div>
+        ) : null}
       </nav>
 
       <div className="border-t border-white/60 p-3">
@@ -81,13 +83,15 @@ export function AppRail() {
           className="focus-ring flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/60"
         >
           <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand to-[#3b82f6] text-[11px] font-semibold text-white">
-            AM
+            {workspace.user.initials}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[13px] font-semibold text-ink">
-              Alex Morgan
+              {workspace.user.name}
             </span>
-            <span className="block text-[11px] text-muted">Owner</span>
+            <span className="block text-[11px] text-muted">
+              {workspace.user.role}
+            </span>
           </span>
           <ChevronDown className="h-4 w-4 text-muted" aria-hidden="true" />
         </button>

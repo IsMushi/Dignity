@@ -20,17 +20,17 @@ import {
   GLASS_COOKIE,
   parseGlassLevel,
 } from "@/lib/appearance";
-import { businesses, defaultBusinessId } from "@/lib/data";
+import { defaultBusinessId, isBusinessId } from "@/lib/data";
+import { BUSINESS_COOKIE, LAYOUT_COOKIE } from "@/lib/preferences";
 
 export default async function Home() {
   const cookieStore = await cookies();
   const initialLayout: LayoutMode =
-    cookieStore.get("dignity:layout")?.value === "sidebar" ? "sidebar" : "topbar";
-  const businessCookie = cookieStore.get("dignity:business")?.value;
-  const initialBusinessId =
-    businessCookie && businesses.some((b) => b.id === businessCookie)
-      ? businessCookie
-      : defaultBusinessId;
+    cookieStore.get(LAYOUT_COOKIE)?.value === "sidebar" ? "sidebar" : "topbar";
+  const businessCookie = cookieStore.get(BUSINESS_COOKIE)?.value;
+  const initialBusinessId = isBusinessId(businessCookie)
+    ? businessCookie
+    : defaultBusinessId;
   const initialGlassLevel =
     parseGlassLevel(cookieStore.get(GLASS_COOKIE)?.value) ??
     DEFAULT_GLASS_LEVEL;

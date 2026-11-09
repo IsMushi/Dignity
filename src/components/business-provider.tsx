@@ -10,15 +10,18 @@ import {
 import {
   businesses,
   defaultBusinessId,
+  isBusinessId,
   type Business,
+  type BusinessId,
 } from "@/lib/data";
+import {
+  BUSINESS_COOKIE,
+  BUSINESS_STORAGE_KEY,
+  persistPreference,
+  readCookie,
+} from "@/lib/preferences";
 
-const STORAGE_KEY = "dignity:business";
 const listeners = new Set<() => void>();
-
-function isBusinessId(value: string | null | undefined): value is string {
-  return !!value && businesses.some((business) => business.id === value);
-}
 
 function subscribe(callback: () => void) {
   listeners.add(callback);
@@ -29,26 +32,23 @@ function subscribe(callback: () => void) {
   };
 }
 
-function getSnapshot(): string {
+function getSnapshot(): BusinessId {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(BUSINESS_STORAGE_KEY);
     if (isBusinessId(stored)) return stored;
   } catch {
     // Fall through to the cookie set for the server render.
   }
 
-  const cookie = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${STORAGE_KEY}=`));
-  const value = cookie?.slice(STORAGE_KEY.length + 1);
+  const value = readCookie(BUSINESS_COOKIE);
 
   return isBusinessId(value) ? value : defaultBusinessId;
 }
 
 type BusinessContextValue = {
   business: Business;
-  businessId: string;
-  setBusiness: (id: string) => void;
+  businessId: BusinessId;
+  setBusiness: (id: BusinessId) => void;
 };
 
 const BusinessContext = createContext<BusinessContextValue | null>(null);
@@ -58,11 +58,10 @@ export function BusinessProvider({
   initialBusinessId = defaultBusinessId,
 }: {
   children: React.ReactNode;
-  initialBusinessId?: string;
+  initialBusinessId?: BusinessId;
 }) {
   const getServerSnapshot = useCallback(
-    () =>
-      isBusinessId(initialBusinessId) ? initialBusinessId : defaultBusinessId,
+    () => (isBusinessId(initialBusinessId) ? initialBusinessId : defaultBusinessId),
     [initialBusinessId],
   );
   const businessId = useSyncExternalStore(
@@ -71,14 +70,9 @@ export function BusinessProvider({
     getServerSnapshot,
   );
 
-  const setBusiness = useCallback((id: string) => {
+  const setBusiness = useCallback((id: BusinessId) => {
     if (!isBusinessId(id)) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, id);
-      document.cookie = `${STORAGE_KEY}=${id}; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      // The selection still applies for this session.
-    }
+    persistPreference(BUSINESS_STORAGE_KEY, BUSINESS_COOKIE, id);
     listeners.forEach((listener) => listener());
   }, []);
 

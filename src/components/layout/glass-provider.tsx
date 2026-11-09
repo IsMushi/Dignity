@@ -15,6 +15,7 @@ import {
   clampGlassLevel,
   parseGlassLevel,
 } from "@/lib/appearance";
+import { persistPreference, readCookie } from "@/lib/preferences";
 
 const listeners = new Set<() => void>();
 
@@ -37,12 +38,9 @@ function getSnapshot(): number {
     // Fall through to the cookie set for the server render.
   }
 
-  const cookie = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${GLASS_COOKIE}=`));
-  const value = cookie?.slice(GLASS_COOKIE.length + 1);
+  const storedCookie = readCookie(GLASS_COOKIE);
 
-  return parseGlassLevel(value) ?? DEFAULT_GLASS_LEVEL;
+  return parseGlassLevel(storedCookie) ?? DEFAULT_GLASS_LEVEL;
 }
 
 type GlassContextValue = {
@@ -69,12 +67,7 @@ export function GlassProvider({
 
   const setGlassLevel = useCallback((next: number) => {
     const value = clampGlassLevel(next);
-    try {
-      window.localStorage.setItem(GLASS_STORAGE_KEY, String(value));
-      document.cookie = `${GLASS_COOKIE}=${value}; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      // The preference still applies for this session.
-    }
+    persistPreference(GLASS_STORAGE_KEY, GLASS_COOKIE, String(value));
     listeners.forEach((listener) => listener());
   }, []);
 

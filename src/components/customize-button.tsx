@@ -1,91 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Check,
-  PanelLeft,
-  PanelTop,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { Check, PanelLeft, PanelTop, SlidersHorizontal, X } from "lucide-react";
 import {
   useLayout,
   type LayoutMode,
 } from "@/components/layout/layout-provider";
 import { useGlass } from "@/components/layout/glass-provider";
 import { GLASS_PRESETS, glassLevelLabel } from "@/lib/appearance";
+import { useDismissableMenu } from "@/lib/use-dismissable-menu";
 
 export function CustomizeButton() {
   const { layout, setLayout } = useLayout();
   const { glassLevel, setGlassLevel } = useGlass();
   const glassLabel = glassLevelLabel(glassLevel);
-  const [open, setOpen] = useState(false);
-  const [shown, setShown] = useState(false);
-  const closeTimer = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const closeMenu = useCallback(() => {
-    setShown(false);
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    closeTimer.current = window.setTimeout(
-      () => {
-        setOpen(false);
-        closeTimer.current = null;
-      },
-      reduced ? 0 : 160,
-    );
-  }, []);
-
-  const toggleMenu = () => {
-    if (open) {
-      closeMenu();
-      return;
-    }
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-    setOpen(true);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const frame = requestAnimationFrame(() => setShown(true));
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-
-  useEffect(
-    () => () => {
-      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        closeMenu();
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeMenu();
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, closeMenu]);
+  const {
+    open,
+    shown,
+    close: closeMenu,
+    toggle: toggleMenu,
+    containerRef,
+  } = useDismissableMenu();
 
   return (
     <div className="relative" ref={containerRef}>
@@ -104,7 +38,7 @@ export function CustomizeButton() {
         <div
           role="dialog"
           aria-label="Customize layout"
-          className={`scroll-thin absolute left-0 top-full z-50 mt-2 max-h-[calc(100dvh-7rem)] w-[min(340px,calc(100vw-2rem))] origin-top-left overflow-y-auto rounded-2xl border border-line bg-white p-4 shadow-[0_30px_70px_-30px_rgba(20,55,104,0.45)] transition duration-150 ease-out sm:left-auto sm:right-0 sm:origin-top-right ${
+          className={`scroll-thin glass-panel absolute left-0 top-full z-50 mt-2 max-h-[calc(100dvh-7rem)] w-[min(340px,calc(100vw-2rem))] origin-top-left overflow-y-auto rounded-2xl p-4 transition duration-150 ease-out sm:left-auto sm:right-0 sm:origin-top-right ${
             shown
               ? "scale-100 opacity-100"
               : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
@@ -179,13 +113,25 @@ export function CustomizeButton() {
             className="glass-range mt-2"
           />
 
-          <div
-            aria-hidden="true"
-            className="flex justify-between text-[9.5px] text-muted"
-          >
-            {GLASS_PRESETS.map((preset) => (
-              <span key={preset.label}>{preset.label}</span>
-            ))}
+          <div className="mt-1 flex justify-between text-[9.5px]">
+            {GLASS_PRESETS.map((preset) => {
+              const active = glassLevel === preset.value;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setGlassLevel(preset.value)}
+                  className={
+                    active
+                      ? "focus-ring rounded px-1 py-0.5 font-semibold text-brand"
+                      : "focus-ring rounded px-1 py-0.5 text-muted transition hover:text-ink"
+                  }
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
           </div>
 
           <p className="mt-3 text-[10.5px] text-muted">
@@ -223,7 +169,7 @@ function LayoutOption({
       className={
         active
           ? "focus-ring rounded-xl border border-brand bg-brand/[0.04] p-2 text-left ring-1 ring-brand/20"
-          : "focus-ring rounded-xl border border-line bg-white p-2 text-left transition hover:border-brand/30"
+          : "focus-ring rounded-xl border border-line bg-white/60 p-2 text-left transition hover:border-brand/30"
       }
     >
       <span className="relative block h-[46px] overflow-hidden rounded-md border border-line bg-[#eef5fd]">

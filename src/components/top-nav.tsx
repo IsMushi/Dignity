@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ChevronDown, LayoutGrid, Search } from "lucide-react";
 import { AppIcon } from "@/components/app-icon";
-import { navItems } from "@/lib/data";
+import { navItems, workspace } from "@/lib/data";
 
 export function TopNav() {
   return (
@@ -73,7 +73,7 @@ export function TopNav() {
             className="focus-ring flex items-center gap-1 rounded-full border border-white/80 bg-white/70 py-1 pl-1 pr-1.5 text-ink/70 transition hover:bg-white"
           >
             <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-[11px] font-semibold text-brand ring-1 ring-ink/10">
-              A
+              {workspace.user.initials}
             </span>
             <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
           </button>

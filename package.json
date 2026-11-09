@@ -2,12 +2,14 @@
   "name": "dignity",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/appearance.test.mts"
   },
   "dependencies": {
     "lucide-react": "^1.70.0",

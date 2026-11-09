@@ -26,9 +26,13 @@ export function parseGlassLevel(
   return Number.isFinite(parsed) ? clampGlassLevel(parsed) : null;
 }
 
+/**
+ * Matches the documented ranges in the README: Solid is exactly 0; anything
+ * above it still applies glass, so 1–49 is Soft rather than Solid.
+ */
 export function glassLevelLabel(level: number) {
   const value = clampGlassLevel(level);
-  if (value < 17) return "Solid";
+  if (value === 0) return "Solid";
   if (value < 50) return "Soft";
   if (value < 85) return "Balanced";
   return "Liquid";

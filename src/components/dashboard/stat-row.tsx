@@ -1,5 +1,5 @@
 import { Boxes, Receipt, type LucideIcon } from "lucide-react";
-import { formatRwf, totals } from "@/lib/data";
+import { formatCount, totals } from "@/lib/data";
 import { QuickActions } from "./quick-actions";
 
 function StatCard({
@@ -34,13 +34,13 @@ export function StatRow() {
       <StatCard
         className="xl:col-span-3"
         label="Transactions"
-        value={formatRwf(totals.transactions)}
+        value={formatCount(totals.transactions)}
         icon={Receipt}
       />
       <StatCard
         className="xl:col-span-3"
         label="Low-stock products"
-        value={formatRwf(totals.lowStock)}
+        value={formatCount(totals.lowStock)}
         icon={Boxes}
       />
       <div className="col-span-2 xl:col-span-6">
