@@ -1,0 +1,50 @@
+/*
+  Glass level (0-100) -> every glass token.
+  Gentle until 60 so the default stays readable, then opens up for the last
+  stretch (Liquid). The piecewise min/max maths lives ONCE in the three
+  normalized values below; each token is a plain linear mix of them.
+
+    --g-base   0 → 1 over level 0-60
+    --g-liquid 0 → 1 over level 60-100
+    --g-deep   0 → 1 over level 85-100
+
+  Default is 72 (was 55): at 55 the cards are ~78-90% white, so the blur has
+  nothing to show and the UI reads as frosted pastel instead of glass.
+*/
+@layer base {
+  :root {
+    --glass-level: 72;
+
+    --g-base: calc(min(var(--glass-level), 60) / 60);
+    --g-liquid: calc(max(var(--glass-level) - 60, 0) / 40);
+    --g-deep: calc(max(var(--glass-level) - 85, 0) / 15);
+
+    /* Hero / shell glass — no frost anywhere: blur is permanently zero, the
+       glass read comes from tint, saturation, rim, and refraction only. */
+    --glass-blur: 0px;
+    --glass-saturate: calc(1 + var(--glass-level) * 0.01);
+    --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.624);
+    --glass-tint-soft: calc(0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.588);
+    --glass-bar: calc(
+      0.96 - var(--g-base) * 0.12 - min(var(--g-liquid), 0.625) * 0.784 -
+        var(--g-deep) * 0.1905
+    );
+    --glass-edge: calc(0.96 - var(--glass-level) * 0.0008);
+    --glass-sheen: calc(0.08 + min(var(--glass-level), 70) * 0.004);
+    --glass-panel: calc(0.98 - var(--g-base) * 0.09 - var(--g-liquid) * 0.27);
+
+    /*
+      Data cards now follow the hero cards (+0.08) instead of using their own
+      curve that sat ~12 points more opaque - that gap is why the lower cards
+      looked solid next to the hero cards.
+    */
+    --glass-soft-tint: min(calc(var(--glass-tint) + 0.08), 1);
+    --glass-soft-tint-soft: min(calc(var(--glass-tint-soft) + 0.08), 1);
+    --glass-soft-sheen: calc(0.95 - var(--g-liquid) * 0.7);
+
+    /* The Liquid-only backdrop wash fades in from 85 to 100. */
+    --liquid-wash: var(--g-deep);
+
+    --ambient-strength: calc(0.35 + var(--glass-level) * 0.0065);
+  }
+}

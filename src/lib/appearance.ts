@@ -1,6 +1,7 @@
 export const GLASS_COOKIE = "dignity_glass";
 export const GLASS_STORAGE_KEY = "dignity_glass";
-export const DEFAULT_GLASS_LEVEL = 55;
+export const DEFAULT_GLASS_LEVEL = 72;
+export const LIQUID_GLASS_MIN = 85;
 
 export const GLASS_PRESETS = [
   { label: "Solid", value: 0 },
@@ -30,10 +31,14 @@ export function parseGlassLevel(
  * Matches the documented ranges in the README: Solid is exactly 0; anything
  * above it still applies glass, so 1–49 is Soft rather than Solid.
  */
+export function isLiquidGlass(level: number) {
+  return clampGlassLevel(level) >= LIQUID_GLASS_MIN;
+}
+
 export function glassLevelLabel(level: number) {
   const value = clampGlassLevel(level);
   if (value === 0) return "Solid";
   if (value < 50) return "Soft";
-  if (value < 85) return "Balanced";
+  if (value < LIQUID_GLASS_MIN) return "Balanced";
   return "Liquid";
 }

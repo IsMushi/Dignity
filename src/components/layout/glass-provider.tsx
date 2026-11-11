@@ -13,6 +13,7 @@ import {
   GLASS_COOKIE,
   GLASS_STORAGE_KEY,
   clampGlassLevel,
+  isLiquidGlass,
   parseGlassLevel,
 } from "@/lib/appearance";
 import { createPreferenceStore } from "@/lib/preferences";
@@ -54,7 +55,25 @@ export function GlassProvider({
     const root = document.documentElement;
     root.style.setProperty("--glass-level", String(glassLevel));
     root.dataset.glass = glassLevel === 0 ? "solid" : "on";
+    root.dataset.glassLiquid = isLiquidGlass(glassLevel) ? "true" : "false";
   }, [glassLevel]);
+
+  /*
+    SVG filters inside backdrop-filter only render in Chromium. Firefox and
+    Safari parse the url() but paint no backdrop, so detection has to happen
+    in JS; CSS @supports cannot tell them apart.
+  */
+  useEffect(() => {
+    const brands = (
+      navigator as Navigator & {
+        userAgentData?: { brands?: Array<{ brand: string }> };
+      }
+    ).userAgentData?.brands;
+    const chromium =
+      brands?.some((entry) => /Chromium|Google Chrome|Microsoft Edge/i.test(entry.brand)) ??
+      /Chrome\/|Chromium\/|Edg\//.test(navigator.userAgent);
+    document.documentElement.dataset.lens = chromium ? "on" : "off";
+  }, []);
 
   const value = useMemo(
     () => ({ glassLevel, setGlassLevel }),

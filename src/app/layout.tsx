@@ -4,8 +4,10 @@ import { cookies } from "next/headers";
 import {
   DEFAULT_GLASS_LEVEL,
   GLASS_COOKIE,
+  isLiquidGlass,
   parseGlassLevel,
 } from "@/lib/appearance";
+import { GlassLens } from "@/components/layout/glass-lens";
 import "./globals.css";
 
 const googleSans = localFont({
@@ -44,6 +46,7 @@ export default async function RootLayout({
     <html
       lang="en"
       data-glass={glassLevel === 0 ? "solid" : "on"}
+      data-glass-liquid={isLiquidGlass(glassLevel) ? "true" : "false"}
       style={glassStyle}
       className={`${googleSans.variable} ${googleSansCode.variable}`}
     >
@@ -52,11 +55,17 @@ export default async function RootLayout({
           aria-hidden="true"
           className="ambient-field pointer-events-none fixed inset-0 -z-10 overflow-hidden"
         >
-          <div className="ambient-blob absolute -left-44 -top-56 h-[560px] w-[560px] rounded-full bg-[#cfe0f7] opacity-70 blur-[90px]" />
-          <div className="ambient-blob absolute -top-40 right-[-8%] h-[520px] w-[520px] rounded-full bg-[#dce9fb] opacity-80 blur-[80px]" />
-          <div className="ambient-blob absolute left-[26%] top-[4%] h-[420px] w-[620px] rounded-full bg-[#bcd4f0] opacity-55 blur-[100px]" />
-          <div className="ambient-blob absolute bottom-[-22%] left-[28%] h-[420px] w-[640px] rounded-full bg-[#c6d8ee] opacity-50 blur-[100px]" />
+          <div className="ambient-blob absolute -left-44 -top-56 h-[560px] w-[560px] rounded-full bg-sky-200 opacity-50 blur-[90px]" />
+          <div className="ambient-blob absolute -top-40 right-[-8%] h-[520px] w-[520px] rounded-full bg-sky-100 opacity-70 blur-[80px]" />
+          <div className="ambient-blob absolute left-[26%] top-[4%] h-[420px] w-[620px] rounded-full bg-sky-200 opacity-40 blur-[100px]" />
+          <div className="ambient-blob absolute bottom-[-22%] left-[28%] h-[420px] w-[640px] rounded-full bg-sky-100 opacity-40 blur-[100px]" />
+          <div className="liquid-wash absolute inset-0 overflow-hidden">
+            <div className="liquid-band liquid-band-brand" />
+            <div className="liquid-band liquid-band-copper" />
+            <div className="liquid-band liquid-band-teal" />
+          </div>
         </div>
+        <GlassLens />
         {children}
       </body>
     </html>

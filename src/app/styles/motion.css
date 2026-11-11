@@ -1,0 +1,82 @@
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0) scale(1.06);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes donut-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ambient-field {
+  opacity: var(--ambient-strength);
+}
+
+.ambient-blob {
+  animation: ambient-drift 38s ease-in-out infinite alternate;
+}
+
+.ambient-blob:nth-child(2) {
+  animation-duration: 46s;
+  animation-delay: -12s;
+}
+
+.ambient-blob:nth-child(4) {
+  animation-duration: 52s;
+  animation-delay: -24s;
+}
+
+[data-glass="solid"] .glass,
+[data-glass="solid"] .glass-panel,
+[data-glass="solid"] .card-kpi,
+[data-glass="solid"] .card-soft,
+[data-glass="solid"] .chip {
+  backdrop-filter: none;
+}
+
+[data-glass="solid"] .ambient-blob {
+  animation: none;
+}
+
+.bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 680ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+
+.donut-in {
+  animation: donut-in 620ms cubic-bezier(0.22, 0.61, 0.36, 1) 160ms backwards;
+}
+
+.swap-in {
+  animation: swap-in 220ms ease-out backwards;
+}

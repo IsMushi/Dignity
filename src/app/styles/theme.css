@@ -1,0 +1,12 @@
+@theme {
+  --color-ink: #143768;
+  --color-brand: #094197;
+  --color-muted: #5f7186;
+  --color-line: #e1e9f3;
+  --color-copper: #a05c1e;
+}
+
+@theme inline {
+  --font-sans: var(--font-google-sans);
+  --font-mono: var(--font-google-sans-code);
+}

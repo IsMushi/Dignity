@@ -4,6 +4,7 @@ import {
   DEFAULT_GLASS_LEVEL,
   clampGlassLevel,
   glassLevelLabel,
+  isLiquidGlass,
   parseGlassLevel,
 } from "../src/lib/appearance.ts";
 
@@ -47,4 +48,12 @@ test("glassLevelLabel follows the documented ranges", () => {
 test("glassLevelLabel normalises out-of-range input", () => {
   assert.equal(glassLevelLabel(-5), "Solid");
   assert.equal(glassLevelLabel(250), "Liquid");
+});
+
+test("isLiquidGlass matches the Liquid label boundary", () => {
+  assert.equal(isLiquidGlass(0), false);
+  assert.equal(isLiquidGlass(84), false);
+  assert.equal(isLiquidGlass(85), true);
+  assert.equal(isLiquidGlass(100), true);
+  assert.equal(isLiquidGlass(140), true);
 });

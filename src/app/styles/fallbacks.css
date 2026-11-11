@@ -1,0 +1,55 @@
+/* Keep last: unlayered overrides must win over the layered styles above. */
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-panel,
+  .card-kpi,
+  .card-soft,
+  .chip {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: none;
+  }
+
+  .ambient-blob {
+    animation: none;
+  }
+
+  .liquid-wash {
+    display: none;
+  }
+
+  [data-glass-liquid="true"] .kpi-art {
+    z-index: 3;
+  }
+}
+
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .glass,
+  .glass-panel,
+  .card-kpi,
+  .card-soft,
+  .chip {
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  [data-glass-liquid="true"] .kpi-art {
+    z-index: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

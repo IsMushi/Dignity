@@ -88,9 +88,9 @@ npm run dev      # http://localhost:3000
 | Ink    | `#143768` | Headings, body text                |
 | Copper | `#a05c1e` | Stock and credit accents           |
 
-Glass is the **shell and controls** — top bar, rail, mobile nav, KPI cards, chips, the Customize panel, and the business menu. Dense data surfaces (chart, table, lists) use a soft blue-white gradient: near-opaque at the default (55) so numbers stay high-contrast, then open up after 60 so full Liquid (100) is translucent everywhere, not just the shell.
+Glass is the **shell and controls** — top bar, rail, mobile nav, KPI cards, chips, the Customize panel, and the business menu. Dense data surfaces (chart, table, lists) use a soft blue-white gradient: near-opaque at low levels so numbers stay high-contrast, translucent at the default (72), then open up after 60 so full Liquid (100) is near-clear everywhere, not just the shell.
 
-**Card artwork:** the supplied 3D renders in `public/assets/` (`net-sales-coins.png`, `customer-credit-wallet.png`) were knocked out to true transparency (border flood-fill) so the KPI glass shows through behind the coins/wallet. They are served `unoptimized` because the image optimizer re-encodes to WebP and flattens the alpha channel onto white, which paints an opaque box over the glass.
+**Card artwork:** the supplied 3D renders in `public/assets/` (`net-sales-coins.png`, `customer-credit-wallet.png`) were knocked out to true transparency (border flood-fill) so the KPI glass shows through behind the coins/wallet. They are served `unoptimized` because the image optimizer re-encodes to WebP and flattens the alpha channel onto white, which paints an opaque box over the glass. At Liquid the artwork drops behind the glass layer, so the KPI lens bends it at the bezel.
 
 ### Glass level
 
@@ -100,13 +100,14 @@ The Customize panel sets `--glass-level` (0–100) on `<html>`; every glass toke
 | -------- | ----- | ------------------------------------------------------- |
 | Solid    | 0     | No blur, near-opaque, ambient motion off                |
 | Soft     | 1–49  | Light frost, subtle tint                                |
-| Balanced | 50–84 | Default 55 — frosted with gentle sheen                  |
-| Liquid   | 85–100| Near-clear optical glass with bright rim (reference)    |
+| Balanced | 50–84 | Default 72 — glassy with visible blur                 |
+| Liquid   | 85–100| Clear optical glass: lens-bent backdrop, bright specular rim |
 
 - **Persistence:** `dignity_glass` in both `localStorage` and a cookie; the root layout reads the cookie to set the initial level on first paint.
-- **Tokens:** `--glass-blur` (0 → 19px at Balanced → 8px at Liquid), `--glass-saturate` (1→2), `--glass-tint` / `--glass-tint-soft` / `--glass-bar` (0.96 → 0.16), `--glass-edge`, `--glass-sheen` (capped at 0.36), `--glass-panel` (0.98 → 0.62 for readable menus), `--glass-soft-tint` / `--glass-soft-tint-soft` / `--glass-soft-sheen` (data cards), `--ambient-strength`.
-- **Curve:** gentle until 60, then opens sharply. Blur peaks around Balanced and eases off toward Liquid, so the maximum setting is the clearest pane rather than the blurriest; the bar tint clears to 16% while the rim and specular sheen stay visible.
-- **Fallbacks:** `data-glass="solid"`, reduced-transparency, and no-`backdrop-filter` all force solid surfaces, including dropdown panels.
+- **Tokens:** `--glass-blur` (permanently `0px` — no frost anywhere; the glass read comes from tint, saturation, rim, and refraction), `--glass-saturate` (1→2), `--glass-tint` / `--glass-tint-soft` (0.92 → 0.14), `--glass-bar` (0.60 at default → 0.16 at Liquid), `--glass-edge`, `--glass-sheen` (capped at 0.36), `--glass-panel` (0.98 → 0.62 for readable menus), `--glass-soft-tint` / `--glass-soft-tint-soft` / `--glass-soft-sheen` (data cards), `--liquid-wash` (fades in 85→100), `--ambient-strength`.
+- **Curve:** gentle until 60, then opens sharply toward Liquid. All surfaces are clear at every level — no frost; tint, saturation, rim, and refraction carry the glass read.
+- **Liquid lens:** a [rounded-bezel displacement map](public/glass-lens.png) referenced by an SVG `feDisplacementMap` bends the backdrop at the KPI bezel (the map is tuned for the card aspect, so chrome uses a plain blur instead). Chromium applies it through `backdrop-filter`; Firefox and Safari keep the clear tint + rim fallback because they parse `url()` filters but do not paint them. `data-lens` is set in JS for that reason.
+- **Fallbacks:** `data-glass="solid"`, reduced-transparency, and no-`backdrop-filter` all force solid surfaces, including dropdown panels, and keep the KPI artwork above the glass.
 
 ## Demo data
 
@@ -120,9 +121,9 @@ All figures are supplied demo data (Kivu Market) in `src/lib/data.ts`:
 ## Verified
 
 - `npm run lint`, `npm run typecheck`, `npm run build` — all pass
-- `npm test` — 6 Node tests covering clamping, parsing, and the documented label ranges
-- Browser QA in Chromium (1440 / 1024 / 390 px): top bar ↔ sidebar switch, clickable presets and slider (default 55, Liquid 100, Solid 0), label range at 10% reads Soft, bar tint 0.85 → 0.16 and blur 19px → 8.8px from default to Liquid, glass Customize/business panels, persistence after reload, no horizontal overflow, no console/page errors
-- Reduced motion/transparency: blur and animation off as specified, including `.glass-panel`
+- `npm test` — 7 Node tests covering clamping, parsing, the documented label ranges, and the Liquid boundary
+- Browser QA in Chromium (1440 / 1024 / 390 px): top bar ↔ sidebar switch, clickable presets and slider (default 72, Liquid 100, Solid 0), label range at 10% reads Soft, shell blur ≈13.8px at default → 8px chrome residual at Liquid (data cards clear), bar tint 0.60 → 0.16, 84 still frosted/Balanced and 85 switches to Liquid, `data-lens` + `url(#dignity-lens)` on the KPI cards, glass Customize/business panels, persistence after reload, no horizontal overflow, no console/page errors
+- Reduced motion/transparency: blur and animation off as specified, including `.glass-panel`, and KPI artwork stays above the opaque surface
 
 ## Repository
 

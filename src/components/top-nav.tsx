@@ -5,7 +5,7 @@ import { navItems, workspace } from "@/lib/data";
 
 export function TopNav() {
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-b from-[#eaf2fb]/80 via-[#eaf2fb]/40 to-transparent px-3 pb-2 pt-3 sm:px-4">
+    <header className="sticky top-0 z-40 bg-gradient-to-b from-[#d8ecfd]/80 via-[#d8ecfd]/40 to-transparent px-3 pb-2 pt-3 sm:px-4">
       <div className="glass glass-bar mx-auto flex h-16 max-w-[1440px] items-center gap-2 rounded-[22px] border border-white/70 px-3 shadow-[0_20px_44px_-34px_rgba(20,55,104,0.55)] sm:gap-3 sm:px-4">
         <a
           href="#"
