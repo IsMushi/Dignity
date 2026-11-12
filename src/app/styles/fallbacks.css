@@ -1,21 +1,16 @@
 /* Keep last: unlayered overrides must win over the layered styles above. */
 
 @media (prefers-reduced-transparency: reduce) {
+  :root {
+    --bf-off: none;
+  }
+
   .glass,
   .glass-panel,
   .card-kpi,
   .card-soft,
   .chip {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: none;
-  }
-
-  .ambient-blob {
-    animation: none;
-  }
-
-  .liquid-wash {
-    display: none;
+    background: rgb(var(--surface-soft-rgb) / 0.96);
   }
 
   [data-glass-liquid="true"] .kpi-art {
@@ -24,12 +19,16 @@
 }
 
 @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  :root {
+    --bf-off: none;
+  }
+
   .glass,
   .glass-panel,
   .card-kpi,
   .card-soft,
   .chip {
-    background: rgba(255, 255, 255, 0.96);
+    background: rgb(var(--surface-soft-rgb) / 0.96);
   }
 
   [data-glass-liquid="true"] .kpi-art {
@@ -38,10 +37,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ambient-blob {
-    animation: none;
-  }
-
   *,
   *::before,
   *::after {

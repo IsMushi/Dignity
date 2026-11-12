@@ -8,12 +8,13 @@
     --g-liquid 0 → 1 over level 60-100
     --g-deep   0 → 1 over level 85-100
 
-  Default is 72 (was 55): at 55 the cards are ~78-90% white, so the blur has
-  nothing to show and the UI reads as frosted pastel instead of glass.
+  Default is 100 (full Liquid): every surface renders the clear optical
+  pane by default — low tints, specular rim, reflection streak. Dial the
+  Customize slider below 85 to bring back the frosted levels.
 */
 @layer base {
   :root {
-    --glass-level: 72;
+    --glass-level: 100;
 
     --g-base: calc(min(var(--glass-level), 60) / 60);
     --g-liquid: calc(max(var(--glass-level) - 60, 0) / 40);
@@ -22,7 +23,11 @@
     /* Hero / shell glass — no frost anywhere: blur is permanently zero, the
        glass read comes from tint, saturation, rim, and refraction only. */
     --glass-blur: 0px;
-    --glass-saturate: calc(1 + var(--glass-level) * 0.01);
+    /* Deep Liquid pushes saturation harder so the colours behind the clear
+       pane still read through the tint. */
+    --glass-saturate: calc(
+      1 + var(--glass-level) * 0.01 + var(--g-deep) * 0.5
+    );
     --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.624);
     --glass-tint-soft: calc(0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.588);
     --glass-bar: calc(
@@ -42,9 +47,11 @@
     --glass-soft-tint-soft: min(calc(var(--glass-tint-soft) + 0.08), 1);
     --glass-soft-sheen: calc(0.95 - var(--g-liquid) * 0.7);
 
-    /* The Liquid-only backdrop wash fades in from 85 to 100. */
-    --liquid-wash: var(--g-deep);
-
-    --ambient-strength: calc(0.35 + var(--glass-level) * 0.0065);
+    /* Backdrop wash: the colour bands fade in over 85-100 so the clear Liquid
+       panes have chromatic variation behind them to bend and tint. Capped at
+       0.35: at full strength the bands read as a coloured smudge (a shadow)
+       under the clear KPI panes once the lens saturates them; the tint has to
+       stay ambient, not become an object of its own. */
+    --liquid-wash: calc(var(--g-deep) * 0.35);
   }
 }

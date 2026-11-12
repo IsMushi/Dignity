@@ -10,9 +10,9 @@ export function QuickActions() {
           <button
             key={action.label}
             type="button"
-            className="focus-ring group flex flex-col items-center gap-2 rounded-xl px-2 py-2 transition hover:bg-white/65"
+            className="focus-ring glass-hover group flex flex-col items-center gap-2 rounded-xl px-2 py-2 transition"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/90 bg-white/70 text-brand shadow-[0_8px_18px_-14px_rgba(9,65,151,0.7)] transition group-hover:bg-white">
+            <span className="grid h-10 w-10 place-items-center rounded-xl border edge-strong glass-control text-brand shadow-[0_8px_18px_-14px_rgba(9,65,151,0.7)] transition">
               <AppIcon name={action.icon} className="h-[18px] w-[18px]" />
             </span>
             <span className="text-[11px] font-medium text-ink/75">

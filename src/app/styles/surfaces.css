@@ -4,7 +4,7 @@
   Shared behaviour is declared ONCE in the :where() group:
     - positioning / isolation
     - backdrop-filter (per-surface strength via --blur-k; Liquid clears it)
-    - the gradient rim (::after) - previously only .glass had it, so the
+    - the rim (::after) - previously only .glass had it, so the
       cards had flat 1px borders that didn't match the nav.
   `--bf-off: none` (see fallbacks.css) turns every backdrop-filter off from
   one place.
@@ -29,11 +29,9 @@
     z-index: 2;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(
-      145deg,
-      rgb(255 255 255 / var(--glass-edge)) 0%,
-      rgb(255 255 255 / 0.18) 42%,
-      rgb(255 255 255 / calc(var(--glass-edge) * 0.7)) 100%
+    background: rgb(
+      var(--glass-border-rgb) /
+        calc(var(--glass-edge) * var(--glass-border-strength))
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -49,82 +47,38 @@
   /* ---------- Shell (nav, large panes) ---------- */
 
   .glass {
-    --shadow-drop: 0 24px 60px -42px rgb(20 55 104 / 0.55);
-    background:
-      radial-gradient(
-        120% 90% at 8% -18%,
-        rgb(255 255 255 / var(--glass-sheen)) 0%,
-        rgb(255 255 255 / 0) 58%
-      ),
-      linear-gradient(
-        155deg,
-        rgb(255 255 255 / var(--glass-tint)) 0%,
-        rgb(255 255 255 / var(--glass-tint-soft)) 55%,
-        rgb(255 255 255 / max(calc(var(--glass-tint-soft) - 0.04), 0.06)) 100%
-      );
+    --shadow-drop: 0 24px 60px -42px rgb(var(--surface-shadow-rgb) / 0.55);
+    background: rgb(var(--surface-rgb) / var(--glass-tint));
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      inset 0 -20px 30px -26px rgb(20 55 104 / 0.2),
       var(--shadow-drop);
   }
 
   .glass.glass-bar {
     --blur-k: 1.1;
-    background:
-      radial-gradient(
-        120% 120% at 12% -32%,
-        rgb(255 255 255 / calc(var(--glass-sheen) + 0.12)) 0%,
-        rgb(255 255 255 / 0) 60%
-      ),
-      linear-gradient(
-        160deg,
-        rgb(255 255 255 / var(--glass-bar)) 0%,
-        rgb(255 255 255 / max(calc(var(--glass-bar) - 0.04), 0.1)) 100%
-      );
+    background: rgb(var(--surface-rgb) / var(--glass-bar));
   }
 
   /*
     Dropdowns (Customize, business menu) float over live content, so they
-    carry a stronger tint. Render them through a portal to <body>: a
-    backdrop-filter element nested inside another one can only filter its
-    parent's content, not the page behind it.
+    carry a stronger tint. Render them through a portal to <body> so they
+    sit above the page instead of nesting inside another glass surface.
   */
   .glass-panel {
     --blur-k: 0.9;
-    background:
-      radial-gradient(
-        120% 100% at 10% -24%,
-        rgb(255 255 255 / calc(var(--glass-sheen) + 0.14)) 0%,
-        rgb(255 255 255 / 0) 62%
-      ),
-      linear-gradient(
-        158deg,
-        rgb(255 255 255 / var(--glass-panel)) 0%,
-        rgb(255 255 255 / max(calc(var(--glass-panel) - 0.06), 0.32)) 100%
-      );
+    background: rgb(var(--surface-rgb) / var(--glass-panel));
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      0 30px 70px -30px rgb(20 55 104 / 0.45);
+      0 30px 70px -30px rgb(var(--surface-shadow-rgb) / 0.45);
   }
 
   /* ---------- Data cards ---------- */
 
   .card-soft {
     --blur-k: 0.8;
-    --shadow-drop: 0 18px 44px -36px rgb(20 55 104 / 0.45);
+    --shadow-drop: 0 18px 44px -36px rgb(var(--surface-shadow-rgb) / 0.45);
     border-radius: 22px;
-    background:
-      radial-gradient(
-        120% 120% at 100% 0%,
-        rgb(255 255 255 / var(--glass-soft-sheen)) 0%,
-        rgb(255 255 255 / 0) 58%
-      ),
-      linear-gradient(
-        148deg,
-        rgb(250 253 255 / var(--glass-soft-tint)) 0%,
-        rgb(240 247 255 / var(--glass-soft-tint-soft)) 48%,
-        rgb(230 241 252 / max(calc(var(--glass-soft-tint-soft) - 0.03), 0.08)) 100%
-      );
+    background: rgb(var(--surface-soft-rgb) / var(--glass-soft-tint));
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
       var(--shadow-drop);
@@ -132,54 +86,13 @@
 
   .card-kpi {
     --blur-k: 1.15;
-    --shadow-drop: 0 26px 54px -40px rgb(20 55 104 / 0.55);
+    --shadow-drop: 0 26px 54px -40px rgb(var(--surface-shadow-rgb) / 0.55);
     border-radius: 24px;
-    background:
-      radial-gradient(
-        95% 75% at 6% -14%,
-        rgb(255 255 255 / var(--glass-sheen)) 0%,
-        rgb(255 255 255 / 0) 56%
-      ),
-      radial-gradient(
-        120% 150% at 88% 0%,
-        rgb(255 255 255 / min(calc(var(--glass-tint) + 0.1), 1)) 0%,
-        rgb(255 255 255 / 0) 55%
-      ),
-      linear-gradient(
-        138deg,
-        rgb(246 251 255 / var(--glass-tint)) 0%,
-        rgb(231 241 253 / var(--glass-tint-soft)) 46%,
-        rgb(213 230 249 / max(calc(var(--glass-tint-soft) - 0.04), 0.05)) 100%
-      );
+    background: rgb(var(--surface-soft-rgb) / var(--glass-tint));
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      inset 0 -22px 32px -26px rgb(20 55 104 / 0.22),
+      inset 0 -22px 32px -26px rgb(var(--surface-shadow-rgb) / 0.22),
       var(--shadow-drop);
-  }
-
-  .card-kpi::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background: radial-gradient(
-      85% 120% at 100% 100%,
-      var(--kpi-glow, transparent) 0%,
-      transparent 62%
-    );
-    opacity: var(--kpi-glow-strength, 0);
-  }
-
-  .card-kpi-sales {
-    --kpi-glow: #2f6fbd;
-    --kpi-glow-strength: 0.12;
-  }
-
-  .card-kpi-credit {
-    --kpi-glow: #a05c1e;
-    --kpi-glow-strength: 0.14;
   }
 
   /*
@@ -203,6 +116,54 @@
     }
   }
 
+  /* ---------- Liquid nav indicator ---------- */
+
+  /*
+    One glass body per navigation. `use-liquid-nav` measures the active item
+    and writes --nav-x/-y/-w/-h, so the surface flows between destinations
+    instead of cross-fading two separate pills.
+  */
+  .nav-liquid {
+    position: absolute;
+    top: var(--nav-y, 0px);
+    left: var(--nav-x, 0px);
+    z-index: 0;
+    width: var(--nav-w, 0px);
+    height: var(--nav-h, 0px);
+    border-radius: var(--nav-radius, 999px);
+    border: 1px solid
+      rgb(
+        var(--glass-border-rgb) /
+          calc(var(--glass-edge) * var(--glass-border-strength))
+      );
+    background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      0 12px 26px -20px rgb(var(--surface-shadow-rgb) / 0.5);
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: var(
+      --bf-off,
+      blur(calc(var(--glass-blur) * 0.8))
+        saturate(var(--glass-saturate)) brightness(1.03)
+    );
+    transition:
+      top 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
+      left 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
+      width 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
+      height 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
+      opacity 200ms ease;
+    will-change: top, left, width, height;
+  }
+
+  [data-nav-ready="true"] > .nav-liquid {
+    opacity: 1;
+  }
+
+  [data-nav-moving="true"] > .nav-liquid {
+    animation: liquid-squish 520ms cubic-bezier(0.34, 1.26, 0.64, 1);
+  }
+
   /* ---------- Chip ---------- */
 
   .chip {
@@ -211,8 +172,12 @@
     align-items: center;
     gap: 0.375rem;
     border-radius: 999px;
-    border: 1px solid rgb(255 255 255 / var(--glass-edge));
-    background: rgb(255 255 255 / min(calc(var(--glass-tint) + 0.02), 1));
+    border: 1px solid
+      rgb(
+        var(--glass-border-rgb) /
+          calc(var(--glass-edge) * var(--glass-border-strength))
+      );
+    background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
     padding: 0.3rem 0.65rem;
     font-size: 11.5px;
     font-weight: 600;
@@ -228,6 +193,9 @@
   }
 
   .chip:hover {
-    background: rgb(255 255 255 / min(calc(var(--glass-tint) + 0.14), 1));
+    background: rgb(
+      var(--surface-rgb) /
+        min(calc(var(--glass-tint) + 0.14), 1)
+    );
   }
 }

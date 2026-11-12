@@ -1,0 +1,189 @@
+/*
+  Appearance screen. Layout and controls reuse the glass classes and tokens;
+  these rules only cover the colour swatches, hex fields, contrast badges and
+  the live preview canvas.
+*/
+
+@layer components {
+  .appearance-swatch {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border-radius: 14px;
+    border: 2px solid rgb(255 255 255 / 0.92);
+    box-shadow:
+      inset 0 0 0 1px rgb(20 55 104 / 0.18),
+      0 6px 16px -10px rgb(20 55 104 / 0.55);
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  @media (hover: hover) {
+    .appearance-swatch:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 0 0 1px rgb(20 55 104 / 0.22),
+        0 10px 20px -10px rgb(20 55 104 / 0.6);
+    }
+  }
+
+  .appearance-swatch:focus-within {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  /* The native picker stays interactive but invisible on top of the swatch. */
+  .appearance-swatch input[type="color"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .appearance-hex {
+    width: 8.5rem;
+    border-radius: 10px;
+    border: 1px solid rgb(var(--surface-shadow-rgb) / 0.16);
+    background: rgb(var(--surface-rgb) / 0.72);
+    padding: 0.5rem 0.625rem;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    color: var(--color-ink);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .appearance-hex:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 22%, transparent);
+  }
+
+  .appearance-hex[aria-invalid="true"] {
+    border-color: #b42318;
+    box-shadow: 0 0 0 3px rgb(180 35 24 / 0.16);
+  }
+
+  .contrast-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 0.2rem 0.5rem;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .contrast-badge[data-pass="true"] {
+    border-color: rgb(4 120 87 / 0.28);
+    background: rgb(4 120 87 / 0.12);
+    color: #05624a;
+  }
+
+  .contrast-badge[data-pass="false"] {
+    border-color: rgb(180 35 24 / 0.28);
+    background: rgb(180 35 24 / 0.12);
+    color: #9a2c1d;
+  }
+
+  /* Light text needs the warning colours inverted on a dark canvas. */
+  [data-canvas-tone="dark"] .contrast-badge[data-pass="true"] {
+    border-color: rgb(52 211 153 / 0.4);
+    background: rgb(52 211 153 / 0.16);
+    color: #a7f3d0;
+  }
+
+  [data-canvas-tone="dark"] .contrast-badge[data-pass="false"] {
+    border-color: rgb(248 113 113 / 0.4);
+    background: rgb(248 113 113 / 0.16);
+    color: #fecaca;
+  }
+
+  /*
+    Preview surface. `--preview-canvas` is set inline from the theme so the
+    pane shows the saved/live background, not the page behind the screen.
+  */
+  .appearance-preview {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background-color: var(--preview-canvas, var(--theme-canvas));
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.55),
+      0 34px 70px -42px rgb(20 55 104 / 0.6);
+  }
+
+  .appearance-preview[data-canvas="photo"] {
+    background-image: url("/backgrounds/sky-background.webp");
+  }
+
+  .appearance-image-thumb {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    flex: none;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 2px solid rgb(255 255 255 / 0.92);
+    background-color: var(--theme-canvas);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: var(--color-muted);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--surface-shadow-rgb) / 0.16),
+      0 6px 16px -10px rgb(var(--surface-shadow-rgb) / 0.55);
+  }
+
+  .appearance-image-thumb[data-empty="true"] {
+    background-image: none;
+  }
+
+  .appearance-error {
+    margin-top: 0.5rem;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #9a2c1d;
+  }
+
+  [data-canvas-tone="dark"] .appearance-error {
+    color: #fecaca;
+  }
+
+  .appearance-preview-wash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      color-mix(in srgb, var(--color-brand) 12%, transparent) 70% -10% / 60% 45%
+        no-repeat,
+      color-mix(in srgb, var(--color-brand) 8%, transparent) 8% 88% / 42% 34%
+        no-repeat;
+    filter: blur(30px);
+    opacity: 0.8;
+  }
+
+  .appearance-preview[data-canvas="image"] .appearance-preview-wash {
+    display: none;
+  }
+}

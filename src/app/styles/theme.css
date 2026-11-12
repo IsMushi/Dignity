@@ -6,6 +6,26 @@
   --color-copper: #a05c1e;
 }
 
+/*
+  Theme variables. The defaults match the original sky palette; the root
+  layout and the Appearance provider overwrite them inline from the saved
+  theme cookie. Surface channels are separate because glass tints are
+  authored as `rgb(<channels> / <alpha>)`.
+*/
+:root {
+  --theme-canvas: #8ebfee;
+  --theme-canvas-rgb: 142 191 238;
+  --theme-image: none;
+  --surface-rgb: 255 255 255;
+  --surface-soft-rgb: 246 251 255;
+  --surface-shadow-rgb: 20 55 104;
+  --glass-border-rgb: 255 255 255;
+  --glass-border-strength: 1;
+  --color-on-brand: #ffffff;
+  --color-brand-deep: #0a4aa9;
+  color-scheme: light;
+}
+
 @theme inline {
   --font-sans: var(--font-google-sans);
   --font-mono: var(--font-google-sans-code);

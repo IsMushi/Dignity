@@ -1,9 +1,15 @@
-@keyframes ambient-drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
+@keyframes liquid-squish {
+  0% {
+    scale: 1 1;
   }
-  to {
-    transform: translate3d(3%, -2%, 0) scale(1.06);
+  35% {
+    scale: 1.06 0.94;
+  }
+  68% {
+    scale: 0.97 1.03;
+  }
+  100% {
+    scale: 1 1;
   }
 }
 
@@ -36,36 +42,6 @@
     opacity: 1;
     transform: none;
   }
-}
-
-.ambient-field {
-  opacity: var(--ambient-strength);
-}
-
-.ambient-blob {
-  animation: ambient-drift 38s ease-in-out infinite alternate;
-}
-
-.ambient-blob:nth-child(2) {
-  animation-duration: 46s;
-  animation-delay: -12s;
-}
-
-.ambient-blob:nth-child(4) {
-  animation-duration: 52s;
-  animation-delay: -24s;
-}
-
-[data-glass="solid"] .glass,
-[data-glass="solid"] .glass-panel,
-[data-glass="solid"] .card-kpi,
-[data-glass="solid"] .card-soft,
-[data-glass="solid"] .chip {
-  backdrop-filter: none;
-}
-
-[data-glass="solid"] .ambient-blob {
-  animation: none;
 }
 
 .bar-grow {

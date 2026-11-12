@@ -66,12 +66,14 @@ export const workspace = {
   periodRange: "Oct 7 – 15",
 };
 
-export const navItems: { label: string; icon: IconKey; active?: boolean }[] = [
-  { label: "Overview", icon: "overview", active: true },
-  { label: "Sales", icon: "sales" },
-  { label: "Inventory", icon: "inventory" },
-  { label: "Customers", icon: "customers" },
-  { label: "Expenses", icon: "expenses" },
+export type NavItem = { label: string; icon: IconKey; href: string };
+
+export const navItems: NavItem[] = [
+  { label: "Overview", icon: "overview", href: "/" },
+  { label: "Sales", icon: "sales", href: "/sales" },
+  { label: "Inventory", icon: "inventory", href: "/inventory" },
+  { label: "Customers", icon: "customers", href: "/customers" },
+  { label: "Expenses", icon: "expenses", href: "/expenses" },
 ];
 
 export const totals = {
@@ -101,9 +103,9 @@ export const chartData = [
 ];
 
 export const paymentMix = [
-  { label: "Cash", share: 60, count: 16, color: "#094197" },
-  { label: "Customer credit", share: 6, count: 2, color: "#a05c1e" },
-  { label: "Mobile money", share: 34, count: 9, color: "#7fb2e5" },
+  { label: "Cash", share: 60, count: 16 },
+  { label: "Customer credit", share: 6, count: 2 },
+  { label: "Mobile money", share: 34, count: 9 },
 ];
 
 export const recentSales = [

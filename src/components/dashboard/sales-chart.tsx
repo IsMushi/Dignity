@@ -15,7 +15,7 @@ export function SalesChart() {
         <div>
           <h2 className="flex items-center gap-2 text-[13px] font-semibold text-ink">
             Sales performance
-            <span className="h-1.5 w-1.5 rounded-full bg-[#2f8fe8]" aria-hidden="true" />
+            <span className="h-1.5 w-1.5 rounded-full bg-brand/60" aria-hidden="true" />
           </h2>
           <p className="mt-0.5 text-[11px] text-muted">
             Gross sales · {workspace.period} · {workspace.periodRange}
@@ -23,7 +23,7 @@ export function SalesChart() {
         </div>
         <a
           href="#"
-          className="focus-ring inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition hover:bg-white/70"
+          className="focus-ring glass-hover inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition"
         >
           Explore
           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -73,13 +73,13 @@ export function SalesChart() {
                 >
                   {day.value > 0 ? (
                     <div
-                      className="bar-grow relative w-full max-w-[46px] rounded-t-[8px] bg-gradient-to-t from-[#0b4a9e] via-[#2f74bd] to-[#9cc5ec] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors duration-200 group-hover:from-[#0a4aa9] group-hover:to-[#6aa2e4]"
+                      className="bar-grow relative w-full max-w-[46px] rounded-t-[8px] bg-brand/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors duration-200 group-hover:bg-brand"
                       style={{
                         height: `${height}%`,
                         animationDelay: `${120 + index * 45}ms`,
                       }}
                     >
-                      <span className="num pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-1.5 py-1 text-[10px] font-semibold text-white opacity-0 shadow-sm transition-opacity duration-150 group-hover:opacity-100">
+                      <span className="num pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-1.5 py-1 text-[10px] font-semibold text-[var(--theme-canvas)] opacity-0 shadow-sm transition-opacity duration-150 group-hover:opacity-100">
                         {formatRwf(day.value)} RWF
                       </span>
                     </div>

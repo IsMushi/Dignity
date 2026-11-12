@@ -1,18 +1,23 @@
 "use client";
 
-import { Check, PanelLeft, PanelTop, SlidersHorizontal, X } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Check,
+  PanelLeft,
+  PanelTop,
+  Palette,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import {
   useLayout,
   type LayoutMode,
 } from "@/components/layout/layout-provider";
-import { useGlass } from "@/components/layout/glass-provider";
-import { GLASS_PRESETS, glassLevelLabel } from "@/lib/appearance";
 import { useDismissableMenu } from "@/lib/use-dismissable-menu";
 
 export function CustomizeButton() {
   const { layout, setLayout } = useLayout();
-  const { glassLevel, setGlassLevel } = useGlass();
-  const glassLabel = glassLevelLabel(glassLevel);
   const {
     open,
     shown,
@@ -28,7 +33,7 @@ export function CustomizeButton() {
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={toggleMenu}
-        className="glass focus-ring inline-flex items-center gap-2 rounded-full border border-white/80 px-4 py-2.5 text-[13px] font-semibold text-ink/80 transition hover:bg-white/30"
+        className="glass glass-hover focus-ring inline-flex items-center gap-2 rounded-full border edge px-4 py-2.5 text-[13px] font-semibold text-ink/80 transition"
       >
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         Customize
@@ -92,47 +97,23 @@ export function CustomizeButton() {
             </LayoutOption>
           </div>
 
-          <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-              Glass level
-            </p>
-            <span className="text-[10.5px] font-semibold text-ink/70">
-              {glassLabel} · {glassLevel}%
+          <Link
+            href="/appearance"
+            className="focus-ring mt-5 flex items-center justify-between gap-3 rounded-xl border border-line/80 glass-control px-3 py-2.5 transition"
+          >
+            <span className="flex items-center gap-2.5">
+              <Palette className="h-4 w-4 text-brand" aria-hidden="true" />
+              <span>
+                <span className="block text-[12.5px] font-semibold text-ink">
+                  Appearance
+                </span>
+                <span className="block text-[10.5px] text-muted">
+                  Background, text &amp; glass
+                </span>
+              </span>
             </span>
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={glassLevel}
-            onChange={(event) => setGlassLevel(Number(event.target.value))}
-            aria-label="Glass level"
-            aria-valuetext={`${glassLabel}, ${glassLevel} percent`}
-            className="glass-range mt-2"
-          />
-
-          <div className="mt-1 flex justify-between text-[9.5px]">
-            {GLASS_PRESETS.map((preset) => {
-              const active = glassLevel === preset.value;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setGlassLevel(preset.value)}
-                  className={
-                    active
-                      ? "focus-ring rounded px-1 py-0.5 font-semibold text-brand"
-                      : "focus-ring rounded px-1 py-0.5 text-muted transition hover:text-ink"
-                  }
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
+            <ArrowRight className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
+          </Link>
 
           <p className="mt-3 text-[10.5px] text-muted">
             Saved on this device.
@@ -169,13 +150,13 @@ function LayoutOption({
       className={
         active
           ? "focus-ring rounded-xl border border-brand bg-brand/[0.04] p-2 text-left ring-1 ring-brand/20"
-          : "focus-ring rounded-xl border border-line bg-white/60 p-2 text-left transition hover:border-brand/30"
+          : "focus-ring glass-control rounded-xl border border-line p-2 text-left transition hover:border-brand/30"
       }
     >
       <span className="relative block h-[46px] overflow-hidden rounded-md border border-line bg-[#eef5fd]">
         {children}
         {active ? (
-          <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-brand text-white">
+          <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-brand text-[var(--color-on-brand)]">
             <Check className="h-2.5 w-2.5" aria-hidden="true" />
           </span>
         ) : null}

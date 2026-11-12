@@ -1,5 +1,9 @@
+"use client";
+
 import { CreditCard } from "lucide-react";
+import { useTheme } from "@/components/layout/theme-provider";
 import { paymentMix, totals } from "@/lib/data";
+import { rotateHue } from "@/lib/theme";
 
 const RADIUS = 62;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -21,11 +25,24 @@ const ariaLabel = paymentMix
   .join(", ");
 
 export function PaymentMix() {
+  const { theme } = useTheme();
+
+  /*
+    Categorical colours follow the accent: cash is the accent itself, credit
+    sits opposite it, and mobile money sits one step around the wheel. The
+    roles stay readable while the palette moves with Appearance.
+  */
+  const palette = [
+    theme.accent,
+    rotateHue(theme.accent, 180),
+    rotateHue(theme.accent, -60),
+  ];
+
   return (
     <section className="card-soft flex h-full flex-col p-5">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-[13px] font-semibold text-ink">Payment mix</h2>
-        <span className="grid h-7 w-7 place-items-center rounded-lg border border-white/85 bg-white/60 text-brand/70">
+        <span className="grid h-7 w-7 place-items-center rounded-lg border edge-strong glass-control text-brand/70">
           <CreditCard className="h-4 w-4" strokeWidth={1.7} aria-hidden="true" />
         </span>
       </div>
@@ -43,17 +60,17 @@ export function PaymentMix() {
               cy="80"
               r={RADIUS}
               fill="none"
-              stroke="#e8f0fa"
+              stroke="var(--color-line)"
               strokeWidth="20"
             />
-            {segments.map((segment) => (
+            {segments.map((segment, index) => (
               <circle
                 key={segment.label}
                 cx="80"
                 cy="80"
                 r={RADIUS}
                 fill="none"
-                stroke={segment.color}
+                stroke={palette[index]}
                 strokeWidth="20"
                 strokeLinecap="round"
                 strokeDasharray={segment.dash}
@@ -73,11 +90,11 @@ export function PaymentMix() {
         </div>
 
         <ul className="w-full min-w-0 space-y-3">
-          {paymentMix.map((payment) => (
+          {paymentMix.map((payment, index) => (
             <li key={payment.label} className="flex items-center gap-2.5">
               <span
                 className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: payment.color }}
+                style={{ backgroundColor: palette[index] }}
                 aria-hidden="true"
               />
               <span className="truncate text-[11.5px] text-ink/80">

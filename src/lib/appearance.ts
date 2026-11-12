@@ -1,6 +1,6 @@
 export const GLASS_COOKIE = "dignity_glass";
 export const GLASS_STORAGE_KEY = "dignity_glass";
-export const DEFAULT_GLASS_LEVEL = 72;
+export const DEFAULT_GLASS_LEVEL = 100;
 export const LIQUID_GLASS_MIN = 85;
 
 export const GLASS_PRESETS = [

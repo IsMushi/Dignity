@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/appearance.test.mts"
+    "test": "node --test tests/appearance.test.mts tests/navigation.test.mts tests/theme.test.mts"
   },
   "dependencies": {
     "lucide-react": "^1.70.0",

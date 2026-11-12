@@ -25,7 +25,7 @@ export function WorkspaceBar() {
 
       <button
         type="button"
-        className="chip focus-ring px-2.5 py-1.5 text-[12px] hover:bg-white/85"
+        className="chip focus-ring px-2.5 py-1.5 text-[12px]"
       >
         <MapPin className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
         <span key={business.branch} className="swap-in font-medium text-ink/80">

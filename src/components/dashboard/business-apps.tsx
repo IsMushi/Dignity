@@ -9,7 +9,7 @@ export function BusinessApps() {
         <h2 className="text-[13px] font-semibold text-ink">Business apps</h2>
         <a
           href="#"
-          className="focus-ring inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition hover:bg-white/70"
+          className="focus-ring glass-hover inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition"
         >
           All apps
           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -23,7 +23,7 @@ export function BusinessApps() {
             href="#"
             className="card-soft card-hover focus-ring flex items-center gap-3 p-3.5"
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/90 bg-white/70 text-brand">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border edge-strong glass-control text-brand">
               <AppIcon name={app.icon} className="h-[18px] w-[18px]" />
             </span>
             <span className="text-[12px] font-semibold leading-tight text-ink/85">

@@ -24,6 +24,7 @@ export function persistPreference(
   storageKey: string,
   cookieName: string,
   value: string,
+  cookieValue: string = value,
 ) {
   try {
     window.localStorage.setItem(storageKey, value);
@@ -32,7 +33,7 @@ export function persistPreference(
   }
 
   try {
-    document.cookie = `${cookieName}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
+    document.cookie = `${cookieName}=${encodeURIComponent(cookieValue)}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
   } catch {
     // The value still applies for this session.
   }
@@ -45,23 +46,35 @@ type PreferenceStore<T> = {
 };
 
 /**
- * The three preference providers all need the same external-store shape:
- * read `localStorage` first, fall back to the server-set cookie, notify every
+ * The preference providers all need the same external-store shape: read
+ * `localStorage` first, fall back to the server-set cookie, notify every
  * mounted provider when the value changes. One factory keeps that behaviour
  * (and the `storage` event wiring) in one place.
+ *
+ * `useSyncExternalStore` compares snapshots with `Object.is`, so a parser
+ * that builds a fresh object every read would loop forever. The parsed value
+ * is cached against the raw stored strings, which changes only when a
+ * preference is saved or another tab writes one.
  */
 export function createPreferenceStore<T>({
   storageKey,
   cookieName,
   parse,
   fallback,
+  serialize = String,
+  serializeCookie = serialize,
 }: {
   storageKey: string;
   cookieName: string;
   parse: (value: string | null | undefined) => T | null;
   fallback: T;
+  serialize?: (value: T) => string;
+  /** Keeps oversized values (e.g. a background image) out of the cookie. */
+  serializeCookie?: (value: T) => string;
 }): PreferenceStore<T> {
   const listeners = new Set<() => void>();
+  let cachedKey: string | null = null;
+  let cachedValue: T = fallback;
 
   const subscribe = (callback: () => void) => {
     listeners.add(callback);
@@ -72,19 +85,46 @@ export function createPreferenceStore<T>({
     };
   };
 
-  const getSnapshot = (): T => {
+  const readKey = () => {
+    let stored: string | null = null;
     try {
-      const stored = parse(window.localStorage.getItem(storageKey));
-      if (stored !== null) return stored;
+      stored = window.localStorage.getItem(storageKey);
     } catch {
       // Fall through to the cookie set for the server render.
     }
 
-    return parse(readCookie(cookieName)) ?? fallback;
+    const cookie = readCookie(cookieName);
+    return {
+      key: `${stored ?? "\u0000"}|${cookie ?? "\u0000"}`,
+      stored,
+      cookie,
+    };
+  };
+
+  const getSnapshot = (): T => {
+    const { key, stored, cookie } = readKey();
+    if (key === cachedKey) return cachedValue;
+
+    cachedKey = key;
+    cachedValue = parse(stored) ?? parse(cookie) ?? fallback;
+    return cachedValue;
   };
 
   const set = (value: T) => {
-    persistPreference(storageKey, cookieName, String(value));
+    persistPreference(
+      storageKey,
+      cookieName,
+      serialize(value),
+      serializeCookie(value),
+    );
+
+    /*
+      Trust the value we just wrote. If storage is full or disabled, the
+      reads below still see the old strings; caching the new value under that
+      key keeps the change applied for the session instead of snapping back.
+    */
+    cachedKey = readKey().key;
+    cachedValue = value;
     listeners.forEach((listener) => listener());
   };
 

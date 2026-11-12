@@ -17,7 +17,7 @@ function StatCard({
     <section className={`card-soft relative p-5 ${className ?? ""}`}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-[12.5px] font-medium text-ink/75">{label}</h2>
-        <span className="grid h-7 w-7 place-items-center rounded-lg border border-white/85 bg-white/60 text-brand/70">
+        <span className="grid h-7 w-7 place-items-center rounded-lg border edge-strong glass-control text-brand/70">
           <Icon className="h-4 w-4" strokeWidth={1.7} aria-hidden="true" />
         </span>
       </div>

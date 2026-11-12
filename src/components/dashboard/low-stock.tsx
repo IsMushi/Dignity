@@ -14,7 +14,7 @@ export function LowStock() {
       <ul className="mt-3 flex-1 divide-y divide-white/60">
         {lowStock.map((item) => (
           <li key={item.name} className="flex items-center gap-3 py-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/85 bg-[#f6ead9]/70 text-copper">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border edge-strong bg-[#f6ead9]/70 text-copper">
               <Package className="h-[18px] w-[18px]" strokeWidth={1.7} aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1">
@@ -35,7 +35,7 @@ export function LowStock() {
 
       <a
         href="#"
-        className="focus-ring mt-2 inline-flex items-center gap-1 border-t border-white/60 pt-3 text-[11.5px] font-semibold text-brand hover:underline"
+        className="focus-ring mt-2 inline-flex items-center gap-1 border-t edge-soft pt-3 text-[11.5px] font-semibold text-brand hover:underline"
       >
         View stock
         <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />

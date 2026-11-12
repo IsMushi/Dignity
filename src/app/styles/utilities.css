@@ -17,11 +17,54 @@
     height: 20px;
     padding: 0 5px;
     border-radius: 5px;
-    border: 1px solid rgba(20, 55, 104, 0.12);
-    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgb(var(--surface-shadow-rgb) / 0.12);
+    background: rgb(var(--surface-rgb) / 0.7);
     font-size: 10.5px;
     font-weight: 600;
     color: var(--color-muted);
+  }
+
+  /*
+    Small chrome controls (search, notifications, badges) used white utility
+    fills. They take the theme surface instead, so a dark canvas gets dark
+    controls and the themed text stays readable.
+  */
+  .glass-control {
+    background-color: rgb(var(--surface-rgb) / 0.62);
+  }
+
+  .glass-control:hover {
+    background-color: rgb(var(--surface-rgb) / 0.82);
+  }
+
+  /* Hover fill for rows/links that used a white wash. */
+  .glass-hover:hover {
+    background-color: rgb(var(--surface-rgb) / 0.6);
+  }
+
+  /*
+    Themeable hairlines. The Appearance border colour and strength drive all
+    three tiers, so cards, chips, controls and dividers move together.
+  */
+  .edge {
+    border-color: rgb(
+      var(--glass-border-rgb) /
+        calc(var(--glass-border-strength) * 0.75)
+    );
+  }
+
+  .edge-soft {
+    border-color: rgb(
+      var(--glass-border-rgb) /
+        calc(var(--glass-border-strength) * 0.55)
+    );
+  }
+
+  .edge-strong {
+    border-color: rgb(
+      var(--glass-border-rgb) /
+        calc(var(--glass-border-strength) * 0.9)
+    );
   }
 
   .scroll-thin {
@@ -52,8 +95,8 @@
   .glass-range::-webkit-slider-runnable-track {
     height: 6px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    background: linear-gradient(90deg, #dbe7f5 0%, #7fb2e5 55%, #094197 100%);
+    border: 1px solid rgb(255 255 255 / 0.9);
+    background: color-mix(in srgb, var(--color-brand) 38%, white);
   }
 
   .glass-range::-webkit-slider-thumb {
@@ -71,8 +114,8 @@
   .glass-range::-moz-range-track {
     height: 6px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    background: linear-gradient(90deg, #dbe7f5 0%, #7fb2e5 55%, #094197 100%);
+    border: 1px solid rgb(255 255 255 / 0.9);
+    background: color-mix(in srgb, var(--color-brand) 38%, white);
   }
 
   .glass-range::-moz-range-thumb {

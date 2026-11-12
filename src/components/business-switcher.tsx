@@ -61,8 +61,8 @@ export function BusinessSwitcher({ variant }: { variant: Variant }) {
 
   const triggerClass =
     variant === "bar"
-      ? "focus-ring ml-1 hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-left transition hover:bg-white/60 sm:flex"
-      : "chip focus-ring px-2.5 py-1.5 text-[12px] hover:bg-white/85";
+      ? "focus-ring glass-hover ml-1 hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-left transition sm:flex"
+      : "chip focus-ring px-2.5 py-1.5 text-[12px]";
 
   return (
     <div className="relative" ref={containerRef}>
@@ -149,7 +149,7 @@ export function BusinessSwitcher({ variant }: { variant: Variant }) {
                 className={
                   active
                     ? "focus-ring flex w-full items-center gap-2.5 rounded-xl bg-brand/[0.06] px-2.5 py-2 text-left"
-                    : "focus-ring flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-white/60"
+                    : "focus-ring glass-hover flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition"
                 }
               >
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/10 text-[10.5px] font-bold text-brand">

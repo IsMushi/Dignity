@@ -8,7 +8,7 @@ export function RecentSales() {
         <h2 className="text-[13px] font-semibold text-ink">Recent sales</h2>
         <a
           href="#"
-          className="focus-ring inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition hover:bg-white/70"
+          className="focus-ring glass-hover inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11.5px] font-semibold text-brand transition"
         >
           View all
           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -18,7 +18,7 @@ export function RecentSales() {
       <div className="scroll-thin overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-left">
           <thead>
-            <tr className="border-y border-white/70 bg-white/35 text-[9.5px] uppercase tracking-[0.14em] text-muted">
+            <tr className="border-y edge glass-control text-[9.5px] uppercase tracking-[0.14em] text-muted">
               <th scope="col" className="px-5 py-2.5 font-semibold">
                 Transaction
               </th>
@@ -38,10 +38,10 @@ export function RecentSales() {
           </thead>
           <tbody className="divide-y divide-white/60">
             {recentSales.map((sale) => (
-              <tr key={sale.id} className="transition-colors hover:bg-white/45">
+              <tr key={sale.id} className="glass-hover transition-colors">
                 <td className="whitespace-nowrap px-5 py-3">
                   <span className="inline-flex items-center gap-2">
-                    <span className="grid h-6 w-6 place-items-center rounded-md border border-white/80 bg-white/60 text-brand/60">
+                    <span className="grid h-6 w-6 place-items-center rounded-md border edge glass-control text-brand/60">
                       <Check className="h-3 w-3" aria-hidden="true" />
                     </span>
                     <span className="font-mono text-[11.5px] tracking-tight text-ink/70">
