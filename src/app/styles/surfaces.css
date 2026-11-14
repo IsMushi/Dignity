@@ -51,15 +51,15 @@
   /* ---------- Data cards (pane C) ---------- */
 
   /*
-    Cards take the lab's pane-C treatment at every glass level: clear tint,
-    the rim-only lens and a specular rim. 12% instead of the lab's 6% keeps
-    table rows and figures readable over a photo. The tint uses
+    Cards take the lab's pane-C treatment at every glass level. They rest at a
+    30% tint so table rows and figures stay readable over a photo, then clear
+    to the lab's 12% on hover (see the hover block below). The tint uses
     --surface-soft-rgb, so a dark canvas still yields a dark pane.
   */
   .card-soft {
     --shadow-drop: 0 18px 44px -36px rgb(var(--surface-shadow-rgb) / 0.45);
     border-radius: 22px;
-    background: rgb(var(--surface-soft-rgb) / 0.12);
+    background: rgb(var(--surface-soft-rgb) / 0.3);
     backdrop-filter: var(
       --bf-off,
       saturate(1.2) brightness(1.02) contrast(1.04)
@@ -72,7 +72,7 @@
   .card-kpi {
     --shadow-drop: 0 26px 54px -40px rgb(var(--surface-shadow-rgb) / 0.55);
     border-radius: 24px;
-    background: rgb(var(--surface-soft-rgb) / 0.12);
+    background: rgb(var(--surface-soft-rgb) / 0.3);
     backdrop-filter: var(
       --bf-off,
       saturate(1.2) brightness(1.02) contrast(1.04)
@@ -93,7 +93,7 @@
   */
   .liquid-card {
     border-radius: 28px;
-    background: rgb(var(--surface-soft-rgb) / 0.12);
+    background: rgb(var(--surface-soft-rgb) / 0.3);
     backdrop-filter: var(
       --bf-off,
       saturate(1.2) brightness(1.02) contrast(1.04)
@@ -135,6 +135,35 @@
   }
 
   /*
+    Hover: the pane clears to the lab's 12% tint and the rim brightens, so the
+    water shows only while the card is being touched. Resting cards keep the
+    readable 30% tint. The lens grade intensifies in liquid.css.
+  */
+  @media (hover: hover) {
+    :where(.card-soft, .card-kpi, .liquid-card) {
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        background-color 220ms ease;
+    }
+
+    :where(.card-soft, .card-kpi, .liquid-card):hover {
+      background-color: rgb(var(--surface-soft-rgb) / 0.12);
+      transform: translateY(-2px);
+    }
+
+    :where(.card-soft, .card-kpi, .liquid-card):hover::after {
+      background: linear-gradient(
+        180deg,
+        rgb(255 255 255 / 1),
+        rgb(255 255 255 / 0.35) 42%,
+        rgb(255 255 255 / 0.5) 78%,
+        rgb(255 255 255 / 0.8)
+      );
+    }
+  }
+
+  /*
     Hover only changes the drop shadow variable, so the card keeps its
     borderless depth (the old rule replaced the whole box-shadow). The lift
     runs only on real hover devices, and will-change is applied during hover
@@ -143,7 +172,8 @@
   .card-hover {
     transition:
       transform 220ms ease,
-      box-shadow 220ms ease;
+      box-shadow 220ms ease,
+      background-color 220ms ease;
   }
 
   @media (hover: hover) {

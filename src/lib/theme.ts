@@ -15,7 +15,8 @@ export type BackgroundSceneId =
   | "sky"
   | "convention-day"
   | "pearl-folds"
-  | "sky-sea";
+  | "sky-sea"
+  | "raven-forest";
 
 export type BackgroundScene = {
   id: BackgroundSceneId;
@@ -60,6 +61,14 @@ export const BACKGROUND_SCENES: ReadonlyArray<BackgroundScene> = [
     description: "Open horizon under cloud",
     src: "/backgrounds/sky-sea.webp",
     thumb: "/backgrounds/sky-sea-thumb.webp",
+  },
+  {
+    /* One file for both roles: there is no dedicated thumb yet. */
+    id: "raven-forest",
+    label: "Raven forest",
+    description: "Raven on a stump, misty blue pines",
+    src: "/backgrounds/different.webp",
+    thumb: "/backgrounds/different.webp",
   },
 ];
 

@@ -99,6 +99,33 @@
     );
   }
 
+  /*
+    Hover: the pane clears to the lab's 12% tint, so the lens gets a stronger
+    grade to sell the water. Resting cards keep the 30% tint at 1.2.
+  */
+  @media (hover: hover) {
+    :where(.card-soft, .card-kpi, .liquid-card):hover {
+      backdrop-filter: var(
+        --bf-off,
+        saturate(1.45) brightness(1.05) contrast(1.04)
+      );
+    }
+
+    [data-lens="on"] :where(.card-kpi, .liquid-card):hover {
+      backdrop-filter: var(
+        --bf-off,
+        url(#dignity-lens) saturate(1.45) brightness(1.05) contrast(1.04)
+      );
+    }
+
+    [data-lens="on"] .card-soft:hover {
+      backdrop-filter: var(
+        --bf-off,
+        url(#dignity-surface-lens) saturate(1.45) brightness(1.05) contrast(1.04)
+      );
+    }
+  }
+
   [data-glass-liquid="true"][data-lens="on"] .glass {
     backdrop-filter: var(
       --bf-off,
