@@ -49,21 +49,21 @@
   .edge {
     border-color: rgb(
       var(--glass-border-rgb) /
-        calc(var(--glass-border-strength) * 0.75)
+        calc(var(--glass-hairline) * 0.75)
     );
   }
 
   .edge-soft {
     border-color: rgb(
       var(--glass-border-rgb) /
-        calc(var(--glass-border-strength) * 0.55)
+        calc(var(--glass-hairline) * 0.55)
     );
   }
 
   .edge-strong {
     border-color: rgb(
       var(--glass-border-rgb) /
-        calc(var(--glass-border-strength) * 0.9)
+        calc(var(--glass-hairline) * 0.9)
     );
   }
 

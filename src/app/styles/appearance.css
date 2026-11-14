@@ -131,10 +131,6 @@
       0 34px 70px -42px rgb(20 55 104 / 0.6);
   }
 
-  .appearance-preview[data-canvas="photo"] {
-    background-image: url("/backgrounds/sky-background.webp");
-  }
-
   .appearance-image-thumb {
     display: grid;
     place-items: center;

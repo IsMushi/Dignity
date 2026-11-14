@@ -14,7 +14,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Workspace"
-      className="glass glass-bar fixed inset-x-0 bottom-0 z-40 border-t edge-soft pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="glass glass-bar fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       <ul
         ref={setList}

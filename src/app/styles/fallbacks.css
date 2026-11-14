@@ -9,6 +9,7 @@
   .glass-panel,
   .card-kpi,
   .card-soft,
+  .liquid-card,
   .chip {
     background: rgb(var(--surface-soft-rgb) / 0.96);
   }
@@ -27,6 +28,7 @@
   .glass-panel,
   .card-kpi,
   .card-soft,
+  .liquid-card,
   .chip {
     background: rgb(var(--surface-soft-rgb) / 0.96);
   }

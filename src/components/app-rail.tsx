@@ -13,7 +13,7 @@ export function AppRail() {
   const { setList, active, moving, select } = useLiquidNav();
 
   return (
-    <aside className="glass fixed inset-y-0 left-0 z-40 hidden w-[264px] flex-col border-r edge-soft lg:flex">
+    <aside className="glass fixed inset-y-0 left-0 z-40 hidden w-[264px] flex-col lg:flex">
       <div className="flex h-16 items-center px-5">
         <Link href="/" aria-label="Dignity home" className="focus-ring rounded-lg">
           <Image

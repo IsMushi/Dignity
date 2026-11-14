@@ -16,7 +16,9 @@ import { GlassLevelControl } from "@/components/glass-level-control";
 import { useTheme } from "@/components/layout/theme-provider";
 import { themeImageFromFile, MAX_THEME_IMAGE_BYTES } from "@/lib/theme-image";
 import {
+  BACKGROUND_SCENES,
   THEME_PRESETS,
+  backgroundScene,
   canvasMode,
   contrastRatio,
   contrastRating,
@@ -24,13 +26,23 @@ import {
   mixHex,
   normalizeHex,
   onBrandColor,
+  themeImageCss,
+  type BackgroundScene,
+  type BackgroundSceneId,
   type Theme,
   type ThemePresetId,
 } from "@/lib/theme";
 
 export function AppearanceScreen() {
-  const { theme, applyPreset, setColor, setBorderStrength, setImage, resetTheme } =
-    useTheme();
+  const {
+    theme,
+    applyPreset,
+    setColor,
+    setBorderStrength,
+    setImage,
+    setScene,
+    resetTheme,
+  } = useTheme();
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageBusy, setImageBusy] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -39,6 +51,9 @@ export function AppearanceScreen() {
   const presetLabel =
     THEME_PRESETS.find((preset) => preset.id === theme.preset)?.label ??
     "Custom";
+  const canvasLabel = theme.image
+    ? "Upload"
+    : (backgroundScene(theme.scene)?.label ?? "Flat colour");
 
   const pickImage = () => fileRef.current?.click();
 
@@ -61,7 +76,7 @@ export function AppearanceScreen() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1120px]">
+    <div className="mx-auto w-full">
       <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <Link
@@ -113,7 +128,7 @@ export function AppearanceScreen() {
                   theme.accent === preset.theme.accent &&
                   theme.border === preset.theme.border &&
                   theme.borderStrength === preset.theme.borderStrength &&
-                  theme.photo === preset.theme.photo;
+                  theme.scene === preset.theme.scene;
 
                 return (
                   <PresetOption
@@ -128,6 +143,34 @@ export function AppearanceScreen() {
                 );
               })}
             </div>
+          </section>
+
+          <section className="card-soft p-5" aria-labelledby="backgrounds-heading">
+            <div className="flex items-center justify-between gap-3">
+              <h2
+                id="backgrounds-heading"
+                className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted"
+              >
+                Backgrounds
+              </h2>
+              <span className="chip px-2 py-0.5 text-[10px]">{canvasLabel}</span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {BACKGROUND_SCENES.map((scene) => (
+                <SceneOption
+                  key={scene.id}
+                  scene={scene}
+                  accent={theme.accent}
+                  active={theme.scene === scene.id && theme.image === null}
+                  onSelect={setScene}
+                />
+              ))}
+            </div>
+
+            <p className="mt-3 text-[10.5px] leading-relaxed text-muted">
+              A background replaces any upload and keeps the colours above.
+            </p>
           </section>
 
           <section className="card-soft p-5" aria-labelledby="colours-heading">
@@ -231,8 +274,9 @@ export function AppearanceScreen() {
               </div>
 
               <p className="mt-2 text-[10.5px] leading-relaxed text-muted">
-                Drives the rim on glass cards, chips, controls and section
-                rules. At 0% the border is invisible.
+                Drives the hairline on chips, controls and section rules.
+                Card reflections and the borderless navigation panes are set
+                by the glass style. At 0% the border is invisible.
               </p>
             </div>
           </section>
@@ -243,7 +287,7 @@ export function AppearanceScreen() {
                 id="image-heading"
                 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted"
               >
-                Background image
+                Upload image
               </h2>
               {theme.image ? (
                 <span className="chip px-2 py-0.5 text-[10px]">Custom</span>
@@ -268,12 +312,13 @@ export function AppearanceScreen() {
 
               <div className="min-w-0 flex-1">
                 <p className="text-[12.5px] font-semibold text-ink">
-                  {theme.image ? "Your image is the canvas" : "No image set"}
+                  {theme.image ? "Your upload is the canvas" : "No upload set"}
                 </p>
                 <p className="mt-0.5 text-[10.5px] leading-snug text-muted">
                   JPG, PNG, WebP, AVIF or GIF up to{" "}
                   {MAX_THEME_IMAGE_BYTES / 1024 / 1024} MB. Resized to 1600px and
-                  kept on this device only.
+                  kept on this device only. Choosing a background above replaces
+                  it.
                 </p>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -383,9 +428,7 @@ function PresetOption({
         className="relative block h-[58px] overflow-hidden rounded-lg border edge"
         style={{
           backgroundColor: theme.background,
-          backgroundImage: theme.photo
-            ? 'url("/backgrounds/sky-background.webp")'
-            : "none",
+          backgroundImage: themeImageCss(theme) ?? "none",
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
@@ -423,6 +466,60 @@ function PresetOption({
       </span>
       <span className="block text-[10px] leading-snug text-muted">
         {description}
+      </span>
+    </button>
+  );
+}
+
+function SceneOption({
+  scene,
+  active,
+  accent,
+  onSelect,
+}: {
+  scene: BackgroundScene;
+  active: boolean;
+  accent: string;
+  onSelect: (id: BackgroundSceneId) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={() => onSelect(scene.id)}
+      className={
+        active
+          ? "focus-ring rounded-xl border border-brand bg-brand/[0.05] p-2 text-left ring-1 ring-brand/20"
+          : "focus-ring glass-control rounded-xl border border-line p-2 text-left transition hover:border-brand/35"
+      }
+    >
+      <span
+        aria-hidden="true"
+        className="relative block h-[58px] overflow-hidden rounded-lg border edge"
+        style={{
+          backgroundColor: "var(--theme-canvas)",
+          backgroundImage: `url("${scene.thumb}")`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+      >
+        {active ? (
+          <span
+            className="absolute right-1.5 top-1.5 grid h-4 w-4 place-items-center rounded-full"
+            style={{
+              backgroundColor: accent,
+              color: onBrandColor(accent),
+            }}
+          >
+            <Check className="h-2.5 w-2.5" aria-hidden="true" />
+          </span>
+        ) : null}
+      </span>
+      <span className="mt-2 block text-[12px] font-semibold text-ink">
+        {scene.label}
+      </span>
+      <span className="block text-[10px] leading-snug text-muted">
+        {scene.description}
       </span>
     </button>
   );
@@ -546,6 +643,7 @@ function Preview({
   const muted = mixHex(theme.text, theme.background, 0.62);
   const ghostBorder = mixHex(theme.text, theme.background, 0.3);
   const onBrand = onBrandColor(theme.accent);
+  const previewImage = themeImageCss(theme);
 
   return (
     <section className="card-soft overflow-hidden" aria-labelledby="preview-heading">
@@ -566,9 +664,7 @@ function Preview({
           style={
             {
               "--preview-canvas": theme.background,
-              ...(theme.image
-                ? { backgroundImage: `url("${theme.image}")` }
-                : {}),
+              ...(previewImage ? { backgroundImage: previewImage } : {}),
             } as React.CSSProperties
           }
         >

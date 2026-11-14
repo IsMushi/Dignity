@@ -6,7 +6,7 @@ import { workspace } from "@/lib/data";
 
 export function TopBar() {
   return (
-    <header className="glass glass-bar sticky top-0 z-30 border-b edge-soft">
+    <header className="glass glass-bar sticky top-0 z-30">
       <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 lg:hidden">
           <Image

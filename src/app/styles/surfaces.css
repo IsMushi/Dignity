@@ -4,13 +4,14 @@
   Shared behaviour is declared ONCE in the :where() group:
     - positioning / isolation
     - backdrop-filter (per-surface strength via --blur-k; Liquid clears it)
-    - the rim (::after) - previously only .glass had it, so the
-      cards had flat 1px borders that didn't match the nav.
+  Navigation and panels are intentionally borderless. Cards carry the lab's
+  pane-C treatment at every glass level: a clear tinted pane, the rim-only
+  lens and a specular rim. Chips and small controls keep their hairline.
   `--bf-off: none` (see fallbacks.css) turns every backdrop-filter off from
   one place.
 */
 @layer components {
-  :where(.glass, .glass-panel, .card-kpi, .card-soft) {
+  :where(.glass, .glass-panel, .card-kpi, .card-soft, .liquid-card) {
     position: relative;
     isolation: isolate;
     /* Do not hand-write -webkit- here: Lightning CSS adds the prefix and
@@ -18,30 +19,9 @@
     backdrop-filter: var(
       --bf-off,
       blur(calc(var(--glass-blur) * var(--blur-k, 1)))
-        saturate(var(--glass-saturate)) brightness(1.03)
+        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+        contrast(var(--glass-contrast))
     );
-  }
-
-  :where(.glass, .glass-panel, .card-kpi, .card-soft)::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    border-radius: inherit;
-    padding: 1px;
-    background: rgb(
-      var(--glass-border-rgb) /
-        calc(var(--glass-edge) * var(--glass-border-strength))
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    pointer-events: none;
   }
 
   /* ---------- Shell (nav, large panes) ---------- */
@@ -49,9 +29,7 @@
   .glass {
     --shadow-drop: 0 24px 60px -42px rgb(var(--surface-shadow-rgb) / 0.55);
     background: rgb(var(--surface-rgb) / var(--glass-tint));
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      var(--shadow-drop);
+    box-shadow: var(--shadow-drop);
   }
 
   .glass.glass-bar {
@@ -67,39 +45,100 @@
   .glass-panel {
     --blur-k: 0.9;
     background: rgb(var(--surface-rgb) / var(--glass-panel));
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      0 30px 70px -30px rgb(var(--surface-shadow-rgb) / 0.45);
+    box-shadow: 0 30px 70px -30px rgb(var(--surface-shadow-rgb) / 0.45);
   }
 
-  /* ---------- Data cards ---------- */
+  /* ---------- Data cards (pane C) ---------- */
 
+  /*
+    Cards take the lab's pane-C treatment at every glass level: clear tint,
+    the rim-only lens and a specular rim. 12% instead of the lab's 6% keeps
+    table rows and figures readable over a photo. The tint uses
+    --surface-soft-rgb, so a dark canvas still yields a dark pane.
+  */
   .card-soft {
-    --blur-k: 0.8;
     --shadow-drop: 0 18px 44px -36px rgb(var(--surface-shadow-rgb) / 0.45);
     border-radius: 22px;
-    background: rgb(var(--surface-soft-rgb) / var(--glass-soft-tint));
+    background: rgb(var(--surface-soft-rgb) / 0.12);
+    backdrop-filter: var(
+      --bf-off,
+      saturate(1.2) brightness(1.02) contrast(1.04)
+    );
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
       var(--shadow-drop);
   }
 
   .card-kpi {
-    --blur-k: 1.15;
     --shadow-drop: 0 26px 54px -40px rgb(var(--surface-shadow-rgb) / 0.55);
     border-radius: 24px;
-    background: rgb(var(--surface-soft-rgb) / var(--glass-tint));
+    background: rgb(var(--surface-soft-rgb) / 0.12);
+    backdrop-filter: var(
+      --bf-off,
+      saturate(1.2) brightness(1.02) contrast(1.04)
+    );
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
       inset 0 -22px 32px -26px rgb(var(--surface-shadow-rgb) / 0.22),
       var(--shadow-drop);
   }
 
+  /* ---------- Liquid card ---------- */
+
   /*
-    Hover only changes the drop shadow variable, so the inset rim highlight
-    is kept (the old rule replaced the whole box-shadow). The lift runs only
-    on real hover devices, and will-change is applied during hover only, so
-    cards aren't permanently promoted to their own layer.
+    Standalone liquid pane: same pane-C recipe as the data cards, on a larger
+    28px radius, with a soft shadow term along the bottom edge for depth.
+    It joins the shared group above (isolation) and takes the card lens from
+    liquid.css in Chromium; other browsers keep the tint and grade.
+  */
+  .liquid-card {
+    border-radius: 28px;
+    background: rgb(var(--surface-soft-rgb) / 0.12);
+    backdrop-filter: var(
+      --bf-off,
+      saturate(1.2) brightness(1.02) contrast(1.04)
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
+      inset 0 -2px 4px -1px rgb(var(--surface-shadow-rgb) / 0.18),
+      0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.55);
+  }
+
+  /*
+    Pane-C specular rim: a 2px band, brightest along the top and dimmer down
+    the sides, so the cards read as a curved water surface. The Appearance
+    border colour and strength do NOT drive this — it is part of the glass.
+  */
+  :where(.card-soft, .card-kpi, .liquid-card)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.95),
+      rgb(255 255 255 / 0.22) 42%,
+      rgb(255 255 255 / 0.4) 78%,
+      rgb(255 255 255 / 0.65)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /*
+    Hover only changes the drop shadow variable, so the card keeps its
+    borderless depth (the old rule replaced the whole box-shadow). The lift
+    runs only on real hover devices, and will-change is applied during hover
+    only, so cards aren't permanently promoted to their own layer.
   */
   .card-hover {
     transition:
@@ -134,7 +173,7 @@
     border: 1px solid
       rgb(
         var(--glass-border-rgb) /
-          calc(var(--glass-edge) * var(--glass-border-strength))
+          calc(var(--glass-edge) * var(--glass-hairline))
       );
     background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
     box-shadow:
@@ -145,7 +184,8 @@
     backdrop-filter: var(
       --bf-off,
       blur(calc(var(--glass-blur) * 0.8))
-        saturate(var(--glass-saturate)) brightness(1.03)
+        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+        contrast(var(--glass-contrast))
     );
     transition:
       top 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
@@ -175,7 +215,7 @@
     border: 1px solid
       rgb(
         var(--glass-border-rgb) /
-          calc(var(--glass-edge) * var(--glass-border-strength))
+          calc(var(--glass-edge) * var(--glass-hairline))
       );
     background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
     padding: 0.3rem 0.65rem;
@@ -185,7 +225,8 @@
     backdrop-filter: var(
       --bf-off,
       blur(calc(var(--glass-blur) * var(--blur-k, 1)))
-        saturate(var(--glass-saturate)) brightness(1.03)
+        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+        contrast(var(--glass-contrast))
     );
     transition:
       background 180ms ease,

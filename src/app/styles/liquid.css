@@ -1,94 +1,51 @@
 /*
   Liquid (85-100): the material switches from frosted white to a clear optical
-  pane. The backdrop stays readable, the rim becomes a specular highlight, and
-  Chromium bends the backdrop around the KPI bezel with the SVG lens filter.
+  pane. The backdrop stays readable, nav and panels stay borderless, cards
+  keep their pane-C rim, and Chromium bends the backdrop around the card and
+  KPI bezels with the SVG lens filter.
 */
 
 @layer components {
   /* ---------- Clear pane ---------- */
 
   /* Full liquid: clear optical panes. Surfaces without an SVG lens — every
-     non-Chromium browser, plus chips — frost the sky lightly so the pane
-     still reads as glass; Chromium swaps in the lens below. */
-  [data-glass-liquid="true"] :where(.glass-panel, .card-kpi, .card-soft, .chip) {
+     non-Chromium browser, plus chips — keep no blur at all: the pane is
+     defined by tint and its shadow alone, so the photographic canvas shows
+     straight through (the iOS clear behaviour). Cards carry their own
+     level-independent pane-C rules in surfaces.css. */
+  [data-glass-liquid="true"] :where(.glass-panel, .chip) {
     backdrop-filter: var(
       --bf-off,
-      blur(2px) saturate(var(--glass-saturate)) brightness(1.06) contrast(1.04)
+      blur(0px) saturate(var(--glass-saturate)) brightness(1.06) contrast(1.04)
     );
   }
 
   [data-glass-liquid="true"] .glass {
-    border: 1px solid
-      rgb(
-        var(--glass-border-rgb) /
-          calc(var(--glass-border-strength) * 0.78)
-      );
     backdrop-filter: var(
       --bf-off,
-      blur(4px) saturate(var(--glass-saturate)) brightness(1.03) contrast(1.08)
+      blur(0px) saturate(var(--glass-saturate))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
     background: rgb(var(--surface-rgb) / 0.16);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 1),
-      inset 0 0 0 1px rgb(var(--surface-shadow-rgb) / 0.18),
-      0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.72);
+    box-shadow: 0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.72);
   }
 
   [data-glass-liquid="true"] .glass.glass-bar {
     background: rgb(var(--surface-rgb) / 0.14);
   }
 
-  [data-glass-liquid="true"] .card-kpi {
-    border: 1px solid
-      rgb(
-        var(--glass-border-rgb) /
-          calc(var(--glass-border-strength) * 0.76)
-      );
-    background: rgb(var(--surface-soft-rgb) / 0.14);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 1),
-      inset 0 2px 10px -4px rgb(255 255 255 / 1),
-      inset 0 -3px 5px -1px rgb(var(--surface-shadow-rgb) / 0.26),
-      inset 0 0 0 1px rgb(var(--surface-shadow-rgb) / 0.16),
-      inset 0 0 44px rgb(255 255 255 / 0.3),
-      0 38px 76px -36px rgb(var(--surface-shadow-rgb) / 0.72);
-  }
-
   [data-glass-liquid="true"] .glass-panel {
-    border: 1px solid
-      rgb(
-        var(--glass-border-rgb) /
-          calc(var(--glass-border-strength) * 0.76)
-      );
     background: rgb(var(--surface-rgb) / 0.2);
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 1),
       inset 0 -2px 4px -1px rgb(var(--surface-shadow-rgb) / 0.2),
-      inset 0 0 0 1px rgb(var(--surface-shadow-rgb) / 0.15),
       0 38px 80px -26px rgb(var(--surface-shadow-rgb) / 0.62);
-  }
-
-  [data-glass-liquid="true"] .card-soft {
-    border: 1px solid
-      rgb(
-        var(--glass-border-rgb) /
-          calc(var(--glass-border-strength) * 0.74)
-      );
-    background: rgb(var(--surface-soft-rgb) / 0.14);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 1),
-      inset 0 2px 8px -4px rgb(255 255 255 / 0.95),
-      inset 0 -2px 4px -1px rgb(var(--surface-shadow-rgb) / 0.2),
-      inset 0 0 0 1px rgb(var(--surface-shadow-rgb) / 0.15),
-      inset 0 0 32px rgb(255 255 255 / 0.24),
-      0 30px 62px -32px rgb(var(--surface-shadow-rgb) / 0.66);
   }
 
   [data-glass-liquid="true"] .chip {
     border: 1px solid
       rgb(
         var(--glass-border-rgb) /
-          calc(var(--glass-border-strength) * 0.72)
+          calc(var(--glass-hairline) * 0.72)
       );
     background: rgb(var(--surface-rgb) / 0.22);
   }
@@ -103,37 +60,42 @@
     z-index: 1;
   }
 
-  /* ---------- Specular rim ---------- */
-
-  [data-glass-liquid="true"] .glass::after,
-  [data-glass-liquid="true"] .glass-panel::after,
-  [data-glass-liquid="true"] .card-kpi::after,
-  [data-glass-liquid="true"] .card-soft::after {
-    padding: 2px;
-    background: rgb(
-      var(--glass-border-rgb) /
-        calc(var(--glass-border-strength) * 0.94)
-    );
-  }
+  /* ---------- Chromium lens ---------- */
 
   /* Chromium only: bend the backdrop through the rounded bezel. The KPI map
      is tuned for the card aspect (strongest bend); data panels take the
      gentler surface lens and the wide shell chrome the mildest one. Firefox
      and Safari parse url() but paint no backdrop, so data-lens keeps them on
-     the blur fallback above. */
-  [data-glass-liquid="true"][data-lens="on"] .card-kpi {
+     the tint fallback above.
+
+     The card rules are NOT gated on data-glass-liquid: the pane-C treatment
+     applies at every glass level. */
+  /* Cards use the pane-C grade at every level, so their lens chain carries
+     the same fixed saturate/brightness/contrast as the lab rather than the
+     level-driven --glass-* tokens. */
+  [data-lens="on"] .card-kpi {
     backdrop-filter: var(
       --bf-off,
-      url(#dignity-lens) saturate(var(--glass-saturate)) brightness(1.03)
-        contrast(1.08)
+      url(#dignity-lens) saturate(1.2) brightness(1.02) contrast(1.04)
     );
   }
 
-  [data-glass-liquid="true"][data-lens="on"] .card-soft {
+  [data-lens="on"] .card-soft {
     backdrop-filter: var(
       --bf-off,
-      url(#dignity-surface-lens) saturate(var(--glass-saturate))
-        brightness(1.03) contrast(1.08)
+      url(#dignity-surface-lens) saturate(1.2) brightness(1.02) contrast(1.04)
+    );
+  }
+
+  /*
+    The liquid card is a card, not a panel, so it takes the KPI lens: that
+    map is the one tuned for a card aspect, and stretching the gentler
+    surface map across it would flatten the corners.
+  */
+  [data-lens="on"] .liquid-card {
+    backdrop-filter: var(
+      --bf-off,
+      url(#dignity-lens) saturate(1.2) brightness(1.02) contrast(1.04)
     );
   }
 
@@ -141,7 +103,7 @@
     backdrop-filter: var(
       --bf-off,
       url(#dignity-chrome-lens) saturate(var(--glass-saturate))
-        brightness(1.03) contrast(1.08)
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
   }
 
@@ -152,7 +114,7 @@
     backdrop-filter: var(
       --bf-off,
       url(#dignity-surface-lens) saturate(var(--glass-saturate))
-        brightness(1.03) contrast(1.08)
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
   }
 
@@ -161,7 +123,8 @@
   [data-glass-liquid="true"][data-lens="on"] .chip {
     backdrop-filter: var(
       --bf-off,
-      saturate(var(--glass-saturate)) brightness(1.03) contrast(1.08)
+      saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
+        contrast(var(--glass-contrast))
     );
   }
 }
@@ -177,7 +140,7 @@
   z-index: -1;
   pointer-events: none;
   background-color: var(--theme-canvas);
-  background-image: url("/backgrounds/sky-background.webp");
+  background-image: var(--theme-image, url("/backgrounds/sky-background.webp"));
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;

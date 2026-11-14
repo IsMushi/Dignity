@@ -9,8 +9,11 @@
     --g-deep   0 → 1 over level 85-100
 
   Default is 100 (full Liquid): every surface renders the clear optical
-  pane by default — low tints, specular rim, reflection streak. Dial the
-  Customize slider below 85 to bring back the frosted levels.
+  pane by default — the iOS-style "clear" Liquid Glass: almost no tint, no
+  frost, specular rim and refraction do the work, and the photographic
+  canvas shows straight through. The clear-end values follow the lab's
+  pane C recipe: 6% tint, saturation ~1.2, brightness 1.02, contrast 1.04.
+  Dial the Customize slider below 85 to bring back the frosted levels.
 */
 @layer base {
   :root {
@@ -23,28 +26,52 @@
     /* Hero / shell glass — no frost anywhere: blur is permanently zero, the
        glass read comes from tint, saturation, rim, and refraction only. */
     --glass-blur: 0px;
-    /* Deep Liquid pushes saturation harder so the colours behind the clear
-       pane still read through the tint. */
+    /* Clear Liquid follows the lab's pane C recipe: saturation stays near
+       1.2 instead of a heavy grade, so the photographic canvas keeps its own
+       colour and the lens — not the grade — supplies the pop. */
     --glass-saturate: calc(
-      1 + var(--glass-level) * 0.01 + var(--g-deep) * 0.5
+      1 + var(--g-base) * 0.04 + var(--g-liquid) * 0.1 + var(--g-deep) * 0.06
     );
-    --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.624);
-    --glass-tint-soft: calc(0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.588);
+    /* Clear (iOS-style): at the top end the tint collapses toward the pane
+       being almost pure glass — 6% white at 100, matching pane C, no frost. */
+    --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.704);
+    --glass-tint-soft: calc(0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.63);
     --glass-bar: calc(
       0.96 - var(--g-base) * 0.12 - min(var(--g-liquid), 0.625) * 0.784 -
-        var(--g-deep) * 0.1905
+        var(--g-deep) * 0.26
     );
-    --glass-edge: calc(0.96 - var(--glass-level) * 0.0008);
+    /*
+      Rim / border alpha. Softened and level-aware: frosted levels keep a
+      defined edge (~0.85 at 0), while clear Liquid pulls the rim back to
+      ~0.30 so surfaces read as borderless glass rather than sticker outlines.
+      Border alphas pair this with --glass-hairline below.
+    */
+    --glass-edge: calc(
+      0.85 - var(--g-base) * 0.1 - var(--g-liquid) * 0.4 - var(--g-deep) * 0.05
+    );
+    /*
+      Hairline strength — every border in the app derives from this one token
+      (surface rims, card/chip outlines, utility edges). Full strength until
+      85, then dissolves to nothing at 100 so clear Liquid surfaces read
+      borderless everywhere, not just on one route. Consumers multiply their
+      own per-surface factor into this.
+    */
+    --glass-hairline: calc(
+      var(--glass-border-strength) * (1 - var(--g-deep))
+    );
+    /* Pane C's optical stack. */
+    --glass-brightness: 1.02;
+    --glass-contrast: 1.04;
     --glass-sheen: calc(0.08 + min(var(--glass-level), 70) * 0.004);
     --glass-panel: calc(0.98 - var(--g-base) * 0.09 - var(--g-liquid) * 0.27);
 
     /*
-      Data cards now follow the hero cards (+0.08) instead of using their own
-      curve that sat ~12 points more opaque - that gap is why the lower cards
-      looked solid next to the hero cards.
+      Data cards follow the hero cards (+0.06) instead of using their own
+      curve that sat ~12 points more opaque - that gap is why the lower
+      cards looked solid next to the hero cards.
     */
-    --glass-soft-tint: min(calc(var(--glass-tint) + 0.08), 1);
-    --glass-soft-tint-soft: min(calc(var(--glass-tint-soft) + 0.08), 1);
+    --glass-soft-tint: min(calc(var(--glass-tint) + 0.06), 1);
+    --glass-soft-tint-soft: min(calc(var(--glass-tint-soft) + 0.06), 1);
     --glass-soft-sheen: calc(0.95 - var(--g-liquid) * 0.7);
 
     /* Backdrop wash: the colour bands fade in over 85-100 so the clear Liquid

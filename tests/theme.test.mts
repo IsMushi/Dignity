@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  BACKGROUND_SCENES,
   DEFAULT_THEME,
   THEME_PRESETS,
+  backgroundScene,
   canvasMode,
   clampBorderStrength,
   contrastRatio,
   contrastRating,
+  isBackgroundSceneId,
   mixHex,
   normalizeHex,
   onBrandColor,
@@ -14,10 +17,12 @@ import {
   rotateHue,
   serializeTheme,
   serializeThemeCookie,
+  themeImageCss,
   themeIsDark,
   themeStyle,
   withBorderStrength,
   withColor,
+  withScene,
 } from "../src/lib/theme.ts";
 
 const IMAGE = "data:image/webp;base64,UklGRiQAAABXRUJQ";
@@ -56,19 +61,19 @@ test("parseTheme marks unknown presets as custom", () => {
     JSON.stringify({ p: "neon", b: "#ffffff", t: "#111111", a: "#094197", i: 0 }),
   );
   assert.equal(parsed?.preset, "custom");
-  assert.equal(parsed?.photo, false);
+  assert.equal(parsed?.scene, null);
 });
 
-test("withColor keeps the Sky photo when only text or accent changes", () => {
+test("withColor keeps the Sky scene when only text or accent changes", () => {
   const text = withColor(DEFAULT_THEME, "text", "#0b2a55");
-  assert.equal(text.photo, true);
+  assert.equal(text.scene, "sky");
   assert.equal(text.preset, "custom");
 
   const accent = withColor(DEFAULT_THEME, "accent", "#0a4aa9");
-  assert.equal(accent.photo, true);
+  assert.equal(accent.scene, "sky");
 
   const background = withColor(DEFAULT_THEME, "background", "#f2e7d5");
-  assert.equal(background.photo, false);
+  assert.equal(background.scene, null);
 });
 
 test("withColor leaves the other channels untouched", () => {
@@ -76,16 +81,16 @@ test("withColor leaves the other channels untouched", () => {
   assert.equal(text.text, "#0b2a55");
   assert.equal(text.background, DEFAULT_THEME.background);
   assert.equal(text.accent, DEFAULT_THEME.accent);
-  assert.equal(text.photo, true);
+  assert.equal(text.scene, "sky");
   assert.equal(text.preset, "custom");
 });
 
 test("withColor keeps an uploaded image unless the background changes", () => {
-  const uploaded = { ...DEFAULT_THEME, photo: false, image: IMAGE };
+  const uploaded = { ...DEFAULT_THEME, scene: null, image: IMAGE };
 
   const text = withColor(uploaded, "text", "#0b2a55");
   assert.equal(text.image, IMAGE);
-  assert.equal(text.photo, false);
+  assert.equal(text.scene, null);
 
   const accent = withColor(uploaded, "accent", "#0a4aa9");
   assert.equal(accent.image, IMAGE);
@@ -96,18 +101,18 @@ test("withColor keeps an uploaded image unless the background changes", () => {
 });
 
 test("withColor keeps the canvas when only the border changes", () => {
-  const uploaded = { ...DEFAULT_THEME, photo: false, image: IMAGE };
+  const uploaded = { ...DEFAULT_THEME, scene: null, image: IMAGE };
   const bordered = withColor(uploaded, "border", "#B03A2E");
 
   assert.equal(bordered.border, "#b03a2e");
   assert.equal(bordered.borderStrength, DEFAULT_THEME.borderStrength);
   assert.equal(bordered.image, IMAGE);
-  assert.equal(bordered.photo, false);
+  assert.equal(bordered.scene, null);
   assert.equal(bordered.preset, "custom");
 });
 
 test("withBorderStrength clamps and preserves the canvas", () => {
-  const uploaded = { ...DEFAULT_THEME, photo: false, image: IMAGE };
+  const uploaded = { ...DEFAULT_THEME, scene: null, image: IMAGE };
   const bordered = withBorderStrength(uploaded, 140);
 
   assert.equal(bordered.borderStrength, 100);
@@ -116,6 +121,61 @@ test("withBorderStrength clamps and preserves the canvas", () => {
 
   assert.equal(withBorderStrength(DEFAULT_THEME, -20).borderStrength, 0);
   assert.equal(withBorderStrength(DEFAULT_THEME, 42.6).borderStrength, 43);
+});
+
+test("withScene switches the photo canvas and clears an upload", () => {
+  const uploaded = { ...DEFAULT_THEME, scene: null, image: IMAGE };
+  const scene = withScene(uploaded, "pearl-folds");
+
+  assert.equal(scene.scene, "pearl-folds");
+  assert.equal(scene.image, null);
+  assert.equal(scene.preset, "custom");
+
+  assert.equal(withScene(DEFAULT_THEME, "sky").scene, "sky");
+  assert.equal(withScene(DEFAULT_THEME, "sky").preset, "sky");
+  assert.equal(withScene(DEFAULT_THEME, null).scene, null);
+  assert.equal(withScene(DEFAULT_THEME, null).preset, "custom");
+});
+
+test("background scenes expose unique ids and stable asset paths", () => {
+  const ids = BACKGROUND_SCENES.map((scene) => scene.id);
+  assert.equal(new Set(ids).size, ids.length);
+
+  for (const scene of BACKGROUND_SCENES) {
+    assert.match(scene.src, /^\/backgrounds\/[\w-]+\.webp$/);
+    assert.match(scene.thumb, /^\/backgrounds\/[\w-]+\.webp$/);
+    assert.equal(backgroundScene(scene.id)?.src, scene.src);
+    assert.equal(isBackgroundSceneId(scene.id), true);
+  }
+
+  assert.equal(backgroundScene(null), null);
+  assert.equal(isBackgroundSceneId("not-a-scene"), false);
+  assert.equal(isBackgroundSceneId(42), false);
+});
+
+test("legacy photo cookies map to the Sky scene", () => {
+  const base = { p: "sky", b: "#8ebfee", t: "#143768", a: "#094197" };
+
+  assert.equal(parseTheme(JSON.stringify({ ...base, i: 1 }))?.scene, "sky");
+  assert.equal(parseTheme(JSON.stringify({ ...base, i: 0 }))?.scene, null);
+});
+
+test("parseTheme validates the stored scene id", () => {
+  const base = { p: "custom", b: "#ffffff", t: "#111111", a: "#094197" };
+
+  assert.equal(
+    parseTheme(JSON.stringify({ ...base, g: "sky-sea" }))?.scene,
+    "sky-sea",
+  );
+  assert.equal(parseTheme(JSON.stringify({ ...base, g: "neon" }))?.scene, null);
+  assert.equal(
+    parseTheme(JSON.stringify({ ...base, g: "neon", i: 1 }))?.scene,
+    "sky",
+  );
+  assert.equal(
+    parseTheme(JSON.stringify({ ...base, g: "sky-sea", i: 1 }))?.scene,
+    "sky-sea",
+  );
 });
 
 test("clampBorderStrength refuses non-finite input", () => {
@@ -237,7 +297,7 @@ test("themeIsDark detects light presets and dark canvases", () => {
       accent: "#8ab4f8",
       border: "#ffffff",
       borderStrength: 100,
-      photo: false,
+      scene: null,
       image: null,
     }),
     true,
@@ -287,7 +347,7 @@ test("themeStyle switches glass channels for a dark canvas", () => {
     accent: "#8ab4f8",
     border: "#ffffff",
     borderStrength: 100,
-    photo: false,
+    scene: null,
     image: null,
   });
   assert.notEqual(style["--surface-rgb"], "255 255 255");
@@ -295,34 +355,42 @@ test("themeStyle switches glass channels for a dark canvas", () => {
   assert.equal(style["--color-on-brand"], "#08111f");
 });
 
-test("canvasMode prefers an upload, then the Sky photo, then a flat colour", () => {
+test("canvasMode prefers an upload, then a photo scene, then a flat colour", () => {
   assert.equal(canvasMode(DEFAULT_THEME), "photo");
   assert.equal(
-    canvasMode({ ...DEFAULT_THEME, photo: false }),
+    canvasMode(withScene(DEFAULT_THEME, "pearl-folds")),
+    "photo",
+  );
+  assert.equal(
+    canvasMode({ ...DEFAULT_THEME, scene: null }),
     "flat",
   );
   assert.equal(
-    canvasMode({ ...DEFAULT_THEME, photo: false, image: IMAGE }),
+    canvasMode({ ...DEFAULT_THEME, scene: null, image: IMAGE }),
     "image",
   );
   assert.equal(canvasMode({ ...DEFAULT_THEME, image: IMAGE }), "image");
 });
 
 test("theme serialization carries the uploaded image", () => {
-  const uploaded = { ...DEFAULT_THEME, preset: "custom" as const, photo: false, image: IMAGE };
+  const uploaded = { ...DEFAULT_THEME, preset: "custom" as const, scene: null, image: IMAGE };
   const parsed = parseTheme(serializeTheme(uploaded));
   assert.deepEqual(parsed, uploaded);
 });
 
-test("the cookie serializer leaves the image out", () => {
-  const uploaded = { ...DEFAULT_THEME, preset: "custom" as const, photo: false, image: IMAGE };
+test("the cookie serializer keeps the scene but leaves the image out", () => {
+  const uploaded = { ...DEFAULT_THEME, preset: "custom" as const, scene: null, image: IMAGE };
   const cookie = parseTheme(serializeThemeCookie(uploaded));
   assert.equal(cookie?.image, null);
   assert.equal(cookie?.background, uploaded.background);
   assert.equal(cookie?.text, uploaded.text);
   assert.equal(cookie?.accent, uploaded.accent);
-  assert.equal(cookie?.photo, false);
+  assert.equal(cookie?.scene, null);
   assert.ok(serializeThemeCookie(uploaded).length < 200);
+
+  const scene = parseTheme(serializeThemeCookie(withScene(DEFAULT_THEME, "sky-sea")));
+  assert.equal(scene?.scene, "sky-sea");
+  assert.ok(serializeThemeCookie(withScene(DEFAULT_THEME, "sky-sea")).length < 200);
 });
 
 test("parseTheme only accepts image data URLs", () => {
@@ -339,8 +407,23 @@ test("parseTheme only accepts image data URLs", () => {
 });
 
 test("themeStyle exposes the uploaded image as a CSS background", () => {
-  const style = themeStyle({ ...DEFAULT_THEME, photo: false, image: IMAGE });
+  const style = themeStyle({ ...DEFAULT_THEME, scene: null, image: IMAGE });
   assert.equal(style["--theme-image"], `url("${IMAGE}")`);
 
-  assert.equal(themeStyle(DEFAULT_THEME)["--theme-image"], "none");
+  assert.equal(themeStyle(DEFAULT_THEME)["--theme-image"], `url("/backgrounds/sky-background.webp")`);
+});
+
+test("themeImageCss layers the thumbnail under a scene's full image", () => {
+  assert.equal(
+    themeImageCss(withScene(DEFAULT_THEME, "pearl-folds")),
+    'url("/backgrounds/pearl-folds.webp"), url("/backgrounds/pearl-folds-thumb.webp")',
+  );
+  assert.equal(
+    themeImageCss({ ...DEFAULT_THEME, scene: null }),
+    null,
+  );
+  assert.equal(
+    themeImageCss({ ...DEFAULT_THEME, scene: null, image: IMAGE }),
+    `url("${IMAGE}")`,
+  );
 });

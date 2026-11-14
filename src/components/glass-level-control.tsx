@@ -61,8 +61,9 @@ export function GlassLevelControl({
 
       {hint ? (
         <p className="mt-3 text-[11px] leading-relaxed text-muted">
-          Liquid is the full optical pane: stronger refraction, clearer tint,
-          brighter rim. Lower levels frost the surfaces. Saved on this device.
+          Liquid is the full optical pane: stronger refraction for the shell
+          and panels. Cards keep the same water treatment at every level.
+          Saved on this device.
         </p>
       ) : null}
     </div>

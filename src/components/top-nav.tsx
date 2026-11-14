@@ -12,7 +12,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 bg-transparent px-3 pb-2 pt-3 sm:px-4">
-      <div className="glass glass-bar mx-auto flex h-16 max-w-[1440px] items-center gap-2 rounded-[22px] border edge px-3 sm:gap-3 sm:px-4">
+      <div className="glass glass-bar mx-auto flex h-16 max-w-[1440px] items-center gap-2 rounded-[22px] px-3 sm:gap-3 sm:px-4">
         <Link
           href="/"
           aria-label="Dignity home"

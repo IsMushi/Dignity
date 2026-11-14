@@ -13,7 +13,7 @@ export default function AppearancePage() {
     <LayoutShell>
       <AppearanceScreen />
 
-      <footer className="mx-auto mt-8 flex w-full max-w-[1120px] items-center justify-between border-t edge-soft pt-4 text-[11px] text-muted">
+      <footer className="mx-auto mt-8 flex w-full items-center justify-between border-t edge-soft pt-4 text-[11px] text-muted">
         <span>Dignity</span>
         <span>Saved on this device</span>
       </footer>

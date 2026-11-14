@@ -24,6 +24,8 @@ import {
   withBorderStrength,
   withColor,
   withPreset,
+  withScene,
+  type BackgroundSceneId,
   type Theme,
   type ThemePresetId,
 } from "@/lib/theme";
@@ -47,6 +49,7 @@ type ThemeContextValue = {
   ) => void;
   setBorderStrength: (value: number) => void;
   setImage: (image: string | null) => void;
+  setScene: (scene: BackgroundSceneId | null) => void;
   resetTheme: () => void;
 };
 
@@ -110,8 +113,12 @@ export function ThemeProvider({
       ...current,
       preset: "custom",
       image,
-      photo: image ? false : current.photo,
+      scene: image ? null : current.scene,
     });
+  }, []);
+
+  const setScene = useCallback((scene: BackgroundSceneId | null) => {
+    themeStore.set(withScene(themeStore.getSnapshot(), scene));
   }, []);
 
   const resetTheme = useCallback(() => {
@@ -130,6 +137,7 @@ export function ThemeProvider({
       setColor,
       setBorderStrength,
       setImage,
+      setScene,
       resetTheme,
     }),
     [
@@ -139,6 +147,7 @@ export function ThemeProvider({
       setColor,
       setBorderStrength,
       setImage,
+      setScene,
       resetTheme,
     ],
   );

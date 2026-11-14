@@ -10,6 +10,74 @@ export const THEME_STORAGE_KEY = "dignity_theme";
 
 export type ThemePresetId = "sky" | "sand" | "mint" | "graphite";
 
+/** Photographic canvases that ship with the app. */
+export type BackgroundSceneId =
+  | "sky"
+  | "convention-day"
+  | "pearl-folds"
+  | "sky-sea";
+
+export type BackgroundScene = {
+  id: BackgroundSceneId;
+  label: string;
+  description: string;
+  /** Full-size canvas image. */
+  src: string;
+  /** Small tile for the Appearance picker. */
+  thumb: string;
+};
+
+/**
+ * The picker shows `thumb`; the canvas paints `src`. The thumb is layered
+ * under the full image as a fallback, so a scene still shows something while
+ * its high-resolution file is being added.
+ */
+export const BACKGROUND_SCENES: ReadonlyArray<BackgroundScene> = [
+  {
+    id: "sky",
+    label: "Sky",
+    description: "The original sky canvas",
+    src: "/backgrounds/sky-background.webp",
+    thumb: "/backgrounds/sky-background.webp",
+  },
+  {
+    id: "convention-day",
+    label: "Convention day",
+    description: "Sunlit atrium, open floor",
+    src: "/backgrounds/convention-day.webp",
+    thumb: "/backgrounds/convention-day-thumb.webp",
+  },
+  {
+    id: "pearl-folds",
+    label: "Pearl folds",
+    description: "Soft blue textile waves",
+    src: "/backgrounds/pearl-folds.webp",
+    thumb: "/backgrounds/pearl-folds-thumb.webp",
+  },
+  {
+    id: "sky-sea",
+    label: "Sky sea",
+    description: "Open horizon under cloud",
+    src: "/backgrounds/sky-sea.webp",
+    thumb: "/backgrounds/sky-sea-thumb.webp",
+  },
+];
+
+const backgroundSceneIds = new Set<string>(
+  BACKGROUND_SCENES.map((scene) => scene.id),
+);
+
+export function isBackgroundSceneId(
+  value: unknown,
+): value is BackgroundSceneId {
+  return typeof value === "string" && backgroundSceneIds.has(value);
+}
+
+export function backgroundScene(id: BackgroundSceneId | null) {
+  if (!id) return null;
+  return BACKGROUND_SCENES.find((scene) => scene.id === id) ?? null;
+}
+
 export type Theme = {
   /** Preset currently applied, or "custom" once a colour is edited. */
   preset: ThemePresetId | "custom";
@@ -23,8 +91,8 @@ export type Theme = {
   border: string;
   /** Border opacity, 0 (invisible) to 100 (the authored edge strength). */
   borderStrength: number;
-  /** Sky keeps the built-in photo canvas. */
-  photo: boolean;
+  /** Bundled photo canvas, or null for a flat colour or an upload. */
+  scene: BackgroundSceneId | null;
   /** User-uploaded canvas image as a data URL (localStorage only). */
   image: string | null;
 };
@@ -40,7 +108,7 @@ export const DEFAULT_THEME: Theme = {
   accent: "#094197",
   border: "#ffffff",
   borderStrength: DEFAULT_BORDER_STRENGTH,
-  photo: true,
+  scene: "sky",
   image: null,
 };
 
@@ -67,7 +135,7 @@ export const THEME_PRESETS: ReadonlyArray<{
       accent: "#8f4f16",
       border: "#ffffff",
       borderStrength: DEFAULT_BORDER_STRENGTH,
-      photo: false,
+      scene: null,
       image: null,
     },
   },
@@ -82,7 +150,7 @@ export const THEME_PRESETS: ReadonlyArray<{
       accent: "#0c6b50",
       border: "#ffffff",
       borderStrength: DEFAULT_BORDER_STRENGTH,
-      photo: false,
+      scene: null,
       image: null,
     },
   },
@@ -97,7 +165,7 @@ export const THEME_PRESETS: ReadonlyArray<{
       accent: "#3b4a5f",
       border: "#ffffff",
       borderStrength: DEFAULT_BORDER_STRENGTH,
-      photo: false,
+      scene: null,
       image: null,
     },
   },
@@ -158,15 +226,15 @@ export function serializeTheme(theme: Theme) {
     a: theme.accent,
     r: theme.border,
     s: theme.borderStrength,
-    i: theme.photo ? 1 : 0,
+    ...(theme.scene ? { g: theme.scene } : {}),
     ...(theme.image ? { m: theme.image } : {}),
   });
 }
 
 /**
  * The cookie is read during the server render and must stay under the 4 KB
- * cookie limit, so the uploaded image is deliberately left out. The client
- * store keeps it in localStorage and applies it after hydration.
+ * cookie limit, so the uploaded image is deliberately left out. Scene ids are
+ * small, so a bundled photo still paints on first render.
  */
 export function serializeThemeCookie(theme: Theme) {
   return JSON.stringify({
@@ -176,7 +244,7 @@ export function serializeThemeCookie(theme: Theme) {
     a: theme.accent,
     r: theme.border,
     s: theme.borderStrength,
-    i: theme.photo ? 1 : 0,
+    ...(theme.scene ? { g: theme.scene } : {}),
   });
 }
 
@@ -204,6 +272,8 @@ export function parseTheme(value: string | null | undefined): Theme | null {
     typeof record.s === "number"
       ? clampBorderStrength(record.s)
       : DEFAULT_BORDER_STRENGTH;
+  const image = isThemeImage(record.m) ? record.m : null;
+  const legacyPhoto = record.i === 1 || record.i === true;
 
   return {
     preset: isThemePresetId(record.p) ? record.p : "custom",
@@ -212,8 +282,15 @@ export function parseTheme(value: string | null | undefined): Theme | null {
     accent,
     border,
     borderStrength,
-    photo: record.i === 1 || record.i === true,
-    image: isThemeImage(record.m) ? record.m : null,
+    /* `g` is the scene id; older themes only had `i` for the Sky photo. */
+    scene: image
+      ? null
+      : isBackgroundSceneId(record.g)
+        ? record.g
+        : legacyPhoto
+          ? "sky"
+          : null,
+    image,
   };
 }
 
@@ -221,7 +298,7 @@ export type CanvasMode = "image" | "photo" | "flat";
 
 export function canvasMode(theme: Theme): CanvasMode {
   if (theme.image) return "image";
-  return theme.photo ? "photo" : "flat";
+  return theme.scene ? "photo" : "flat";
 }
 
 export function withPreset(id: ThemePresetId): Theme {
@@ -229,8 +306,26 @@ export function withPreset(id: ThemePresetId): Theme {
 }
 
 /**
+ * Selects one of the bundled photo canvases. Any upload is cleared, and the
+ * palette stays as it is, so a scene can sit under a custom accent.
+ */
+export function withScene(
+  theme: Theme,
+  scene: BackgroundSceneId | null,
+): Theme {
+  const candidate: Theme = {
+    ...theme,
+    preset: "custom",
+    scene,
+    image: null,
+  };
+
+  return { ...candidate, preset: matchingPreset(candidate) ?? "custom" };
+}
+
+/**
  * Editing the canvas means "no more photo or upload"; editing text, accent or
- * border keeps the current canvas, including the Sky photo and a custom image.
+ * border keeps the current canvas, including the selected photo or upload.
  */
 export function withColor(
   theme: Theme,
@@ -247,7 +342,7 @@ export function withColor(
     text: key === "text" ? normalized : theme.text,
     accent: key === "accent" ? normalized : theme.accent,
     border: key === "border" ? normalized : theme.border,
-    photo: key === "background" ? false : theme.photo,
+    scene: key === "background" ? null : theme.scene,
     image,
   };
 
@@ -274,7 +369,7 @@ function matchingPreset(theme: Theme) {
       entry.theme.accent === theme.accent &&
       entry.theme.border === theme.border &&
       entry.theme.borderStrength === theme.borderStrength &&
-      entry.theme.photo === theme.photo,
+      entry.theme.scene === theme.scene,
   );
   return match?.id ?? null;
 }
@@ -450,6 +545,21 @@ export function meetsTextContrast(ratio: number) {
 }
 
 /**
+ * CSS `background-image` value for the current canvas. A scene layers its
+ * full-size image over the thumbnail so the canvas still paints while the
+ * high-resolution file is missing. Returns null for a flat canvas.
+ */
+export function themeImageCss(theme: Theme) {
+  if (theme.image) return `url("${theme.image}")`;
+
+  const scene = backgroundScene(theme.scene);
+  if (!scene) return null;
+  if (scene.src === scene.thumb) return `url("${scene.src}")`;
+
+  return `url("${scene.src}"), url("${scene.thumb}")`;
+}
+
+/**
  * Inline variables applied to `<html>`. The server uses the cookie value so
  * the first paint already has the saved palette; the provider re-applies the
  * same object whenever a control changes.
@@ -464,7 +574,7 @@ export function themeStyle(theme: Theme): Record<string, string> {
   return {
     "--theme-canvas": theme.background,
     "--theme-canvas-rgb": rgbTriplet(theme.background),
-    "--theme-image": theme.image ? `url("${theme.image}")` : "none",
+    "--theme-image": themeImageCss(theme) ?? "none",
     "--surface-rgb": rgbTriplet(surface),
     "--surface-soft-rgb": rgbTriplet(surfaceSoft),
     "--surface-shadow-rgb": dark ? "0 0 0" : "20 55 104",
