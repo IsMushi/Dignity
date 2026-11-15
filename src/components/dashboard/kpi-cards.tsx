@@ -1,12 +1,36 @@
 import { ArrowUpRight, CreditCard, TrendingUp } from "lucide-react";
+import type { CSSProperties } from "react";
 import { formatRwf, totals, workspace } from "@/lib/data";
 import { CoinStack } from "./coin-stack";
 import { CreditArt } from "./credit-art";
 
+/*
+  The water in each hero card absorbs the colour of the artwork it wraps:
+  copper from the coin stack, brand blue from the credit wallet. The values
+  live here because they belong to these two compositions; a generic card
+  falls back to the brand dye in glass-curve.css.
+*/
+const netSalesDye = {
+  "--water-dye-color": "var(--color-copper)",
+  "--water-dye-alpha": 0.2,
+  "--water-dye-x": "78%",
+  "--water-dye-y": "55%",
+} as CSSProperties;
+
+const creditDye = {
+  "--water-dye-color": "var(--color-brand)",
+  "--water-dye-alpha": 0.14,
+  "--water-dye-x": "76%",
+  "--water-dye-y": "45%",
+} as CSSProperties;
+
 export function KpiCards() {
   return (
     <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <section className="relative min-h-[220px] overflow-hidden rounded-[24px] p-5 sm:p-6">
+      <section
+        className="card-kpi-host relative min-h-[220px] overflow-hidden rounded-[24px] p-5 sm:p-6"
+        style={netSalesDye}
+      >
         <div
           aria-hidden="true"
           className="kpi-art pointer-events-none absolute right-8 bottom-11 top-6 hidden w-[46%] sm:block"
@@ -60,7 +84,10 @@ export function KpiCards() {
         </a>
       </section>
 
-      <section className="relative min-h-[220px] overflow-hidden rounded-[24px] p-5 sm:p-6">
+      <section
+        className="card-kpi-host relative min-h-[220px] overflow-hidden rounded-[24px] p-5 sm:p-6"
+        style={creditDye}
+      >
         <div
           aria-hidden="true"
           className="kpi-art pointer-events-none absolute right-[52px] bottom-12 top-6 hidden w-[44%] sm:block"

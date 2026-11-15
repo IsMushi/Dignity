@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   DEFAULT_GLASS_LEVEL,
+  GLASS_PRESETS,
   clampGlassLevel,
   glassLevelLabel,
   isLiquidGlass,
@@ -40,9 +41,19 @@ test("glassLevelLabel follows the documented ranges", () => {
   assert.equal(glassLevelLabel(1), "Soft");
   assert.equal(glassLevelLabel(49), "Soft");
   assert.equal(glassLevelLabel(50), "Balanced");
-  assert.equal(glassLevelLabel(84), "Balanced");
-  assert.equal(glassLevelLabel(85), "Liquid");
+  assert.equal(glassLevelLabel(74), "Balanced");
+  assert.equal(glassLevelLabel(75), "Liquid");
   assert.equal(glassLevelLabel(100), "Liquid");
+});
+
+test("every preset resolves to its own label", () => {
+  for (const preset of GLASS_PRESETS) {
+    assert.equal(
+      glassLevelLabel(preset.value),
+      preset.label,
+      `${preset.label} @ ${preset.value}`,
+    );
+  }
 });
 
 test("glassLevelLabel normalises out-of-range input", () => {
@@ -52,8 +63,8 @@ test("glassLevelLabel normalises out-of-range input", () => {
 
 test("isLiquidGlass matches the Liquid label boundary", () => {
   assert.equal(isLiquidGlass(0), false);
-  assert.equal(isLiquidGlass(84), false);
-  assert.equal(isLiquidGlass(85), true);
+  assert.equal(isLiquidGlass(74), false);
+  assert.equal(isLiquidGlass(75), true);
   assert.equal(isLiquidGlass(100), true);
   assert.equal(isLiquidGlass(140), true);
 });

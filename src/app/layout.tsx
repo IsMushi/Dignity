@@ -8,6 +8,7 @@ import {
   parseGlassLevel,
 } from "@/lib/appearance";
 import { GlassLens } from "@/components/layout/glass-lens";
+import { WaterTouch } from "@/components/layout/water-touch";
 import { AppProviders } from "@/components/app-providers";
 import type { LayoutMode } from "@/components/layout/layout-provider";
 import { defaultBusinessId, isBusinessId } from "@/lib/data";
@@ -84,6 +85,7 @@ export default async function RootLayout({
           </div>
         </div>
         <GlassLens />
+        <WaterTouch />
         <AppProviders
           initialGlassLevel={glassLevel}
           initialBusinessId={initialBusinessId}

@@ -10,7 +10,10 @@
   .card-kpi,
   .card-soft,
   .liquid-card,
-  .chip {
+  .chip,
+  .glass-control,
+  .kbd,
+  .appearance-hex {
     background: rgb(var(--surface-soft-rgb) / 0.96);
   }
 
@@ -29,7 +32,10 @@
   .card-kpi,
   .card-soft,
   .liquid-card,
-  .chip {
+  .chip,
+  .glass-control,
+  .kbd,
+  .appearance-hex {
     background: rgb(var(--surface-soft-rgb) / 0.96);
   }
 

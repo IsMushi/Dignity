@@ -1,12 +1,51 @@
+/*
+  Water motion, shared by every glass surface.
+
+  --ease-water is a damped spring sampled into one linear() curve: it
+  overshoots the target by 11%, comes back 4% past it, wobbles 2%, then
+  settles. That decaying train is what reads as water — a single overshoot
+  reads as elastic, and a plain ease reads as a slide. Values outside 0-1
+  are legal in linear() (MDN; Baseline widely available), which is the
+  whole point: the overshoot lives in the easing instead of in a pile of
+  keyframes.
+
+  Colour and opacity fades deliberately keep a plain `ease`: an overshoot
+  easing clamps on a colour channel, so it would cost a recomputation and
+  change nothing visible.
+
+  Durations are the three bands fluid-UI guidance puts on small controls
+  versus large surfaces (200-350ms for layout-scale movement, longer for
+  something with mass):
+    --dur-quick  240ms  chips, buttons, content swaps
+    --dur-settle 440ms  cards lifting off the pane
+    --dur-flow   520ms  the nav pill flowing across the bar
+*/
+:root {
+  --ease-water: linear(0, 0.14, 1.11, 0.96, 1.02, 0.996, 1);
+  --dur-quick: 240ms;
+  --dur-settle: 440ms;
+  --dur-flow: 520ms;
+}
+
+/*
+  A surface-tension release, not a bounce: the pill stretches as it
+  launches, overshoots back through rest, counter-stretches at HALF the
+  amplitude, then a final quarter-size wobble before it settles. Amplitudes
+  halve every swing (0.05 -> 0.025 -> 0.008), which is the part that reads
+  as liquid; the old keyframes did one swing and stopped.
+*/
 @keyframes liquid-squish {
   0% {
     scale: 1 1;
   }
-  35% {
-    scale: 1.06 0.94;
+  30% {
+    scale: 1.05 0.95;
   }
-  68% {
-    scale: 0.97 1.03;
+  55% {
+    scale: 0.975 1.025;
+  }
+  80% {
+    scale: 1.008 0.992;
   }
   100% {
     scale: 1 1;
@@ -44,6 +83,11 @@
   }
 }
 
+/*
+  Chart draw-on keeps its own ease (cubic-bezier(0.22, 0.61, 0.36, 1)):
+  bars and donuts are data, not water, and an overshooting bar would lie
+  about its value. Only .swap-in moves onto --ease-water below.
+*/
 .bar-grow {
   transform-origin: bottom;
   animation: bar-grow 680ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
@@ -54,5 +98,5 @@
 }
 
 .swap-in {
-  animation: swap-in 220ms ease-out backwards;
+  animation: swap-in var(--dur-quick) var(--ease-water) backwards;
 }

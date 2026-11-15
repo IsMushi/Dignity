@@ -3,38 +3,114 @@
 
   Shared behaviour is declared ONCE in the :where() group:
     - positioning / isolation
-    - backdrop-filter (per-surface strength via --blur-k; Liquid clears it)
-  Navigation and panels are intentionally borderless. Cards carry the lab's
-  pane-C treatment at every glass level: a clear tinted pane, the rim-only
-  lens and a specular rim. Chips and small controls keep their hairline.
-  `--bf-off: none` (see fallbacks.css) turns every backdrop-filter off from
-  one place.
+    - the colour grade: saturate/brightness/contrast and deliberately no
+      blur — the material is clear water, so the lens bends a sharp backdrop
+    - the colour dye that lets the pane absorb the hue of what it wraps
+  Navigation and panels are intentionally borderless; their edge is a
+  specular rim, not a hairline. Cards carry the lab's pane-C treatment at
+  every glass level: a clear tinted pane, the rim-only lens, a colour dye
+  and a directional specular rim. Chips and small controls keep their
+  hairline. `--bf-off: none` (see fallbacks.css) turns every backdrop-filter
+  off from one place.
 */
 @layer components {
-  :where(.glass, .glass-panel, .card-kpi, .card-soft, .liquid-card) {
+  :where(
+    .glass,
+    .glass-panel,
+    .card-kpi,
+    .card-soft,
+    .liquid-card,
+    .chip,
+    .glass-control,
+    .kbd,
+    .appearance-hex
+  ) {
     position: relative;
     isolation: isolate;
     /* Do not hand-write -webkit- here: Lightning CSS adds the prefix and
        drops the standard property when both are authored. */
     backdrop-filter: var(
       --bf-off,
-      blur(calc(var(--glass-blur) * var(--blur-k, 1)))
-        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-        contrast(var(--glass-contrast))
+      saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
+  }
+
+  /*
+    Muted text on glass. The canvas-derived muted ink is tuned for the page
+    background, not for a translucent pane that picks up a dark photograph —
+    at 10.5px it fell to ~2:1 over the forest scene. Mixing it toward ink
+    keeps the hierarchy (still softer than body text) while holding a
+    readable ratio on every canvas. Only descendants of a glass surface are
+    affected; page text keeps the theme value.
+  */
+  :where(.glass, .glass-panel, .card-kpi, .card-soft, .liquid-card) {
+    --color-muted: color-mix(
+      in srgb,
+      var(--color-muted-base) 25%,
+      var(--color-ink)
+    );
+  }
+
+  /*
+    Legibility without a white sheet. The pane is almost empty, so glass text
+    carries a faint light halo instead: it separates dark ink from a dark
+    photograph and is invisible over a light one. This is the alternative to
+    raising the fill, which is what turns the material into frosted plastic.
+  */
+  :where(.glass, .glass-panel, .card-kpi, .card-soft, .liquid-card) {
+    text-shadow:
+      0 0 3px rgb(255 255 255 / 0.85),
+      0 1px 2px rgb(255 255 255 / 0.55);
   }
 
   /* ---------- Shell (nav, large panes) ---------- */
 
   .glass {
-    --shadow-drop: 0 24px 60px -42px rgb(var(--surface-shadow-rgb) / 0.55);
+    --lens-bevel: 36px;
+    --lens-depth: 14px;
+    --shadow-drop: 0 28px 66px -40px rgb(var(--surface-shadow-rgb) / 0.6);
     background: rgb(var(--surface-rgb) / var(--glass-tint));
-    box-shadow: var(--shadow-drop);
+    background-image:
+      linear-gradient(
+        168deg,
+        rgb(255 255 255 / 0.18) 0%,
+        rgb(255 255 255 / 0.05) 34%,
+        transparent 55%
+      ),
+      radial-gradient(
+        120% 90% at var(--water-dye-x) var(--water-dye-y),
+        color-mix(
+          in srgb,
+          var(--water-dye-color) calc(var(--water-dye-alpha) * 100%),
+          transparent
+        ),
+        transparent 64%
+      ),
+      linear-gradient(
+        rgb(9 16 28 / var(--glass-shade)),
+        rgb(9 16 28 / var(--glass-shade))
+      );
+    /*
+      A directional specular rim: a bright top edge where light enters the
+      pane, a dark bottom edge where it leaves. This is what makes the shell
+      read as a lit solid instead of a translucent rectangle, and it survives
+      at Liquid where the hairline dissolves.
+    */
+    box-shadow:
+      inset 0 1px 0
+        rgb(255 255 255 / calc(0.7 * var(--glass-specular, 1))),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.22),
+      var(--shadow-drop);
   }
 
   .glass.glass-bar {
-    --blur-k: 1.1;
-    background: rgb(var(--surface-rgb) / var(--glass-bar));
+    /* The bar is only 64px tall, so a 36px bevel would bend its whole
+       height. Keep its lens a rim cue and leave the strong water to the
+       cards and the rail. */
+    --lens-bevel: 22px;
+    --lens-depth: 8px;
+    background-color: rgb(var(--surface-rgb) / var(--glass-bar));
   }
 
   /*
@@ -43,71 +119,133 @@
     sit above the page instead of nesting inside another glass surface.
   */
   .glass-panel {
-    --blur-k: 0.9;
+    --lens-bevel: 30px;
+    --lens-depth: 10px;
+    --water-dye-alpha: 0.05;
     background: rgb(var(--surface-rgb) / var(--glass-panel));
-    box-shadow: 0 30px 70px -30px rgb(var(--surface-shadow-rgb) / 0.45);
+    background-image:
+      linear-gradient(
+        168deg,
+        rgb(255 255 255 / 0.07) 0%,
+        transparent 38%
+      ),
+      radial-gradient(
+        120% 90% at var(--water-dye-x) var(--water-dye-y),
+        color-mix(
+          in srgb,
+          var(--water-dye-color) calc(var(--water-dye-alpha) * 100%),
+          transparent
+        ),
+        transparent 64%
+      ),
+      linear-gradient(
+        rgb(9 16 28 / calc(var(--glass-shade) * 2)),
+        rgb(9 16 28 / calc(var(--glass-shade) * 2))
+      );
+    box-shadow:
+      inset 0 1px 0
+        rgb(255 255 255 / calc(0.65 * var(--glass-specular, 1))),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.2),
+      0 32px 74px -30px rgb(var(--surface-shadow-rgb) / 0.5);
   }
 
   /* ---------- Data cards (pane C) ---------- */
 
   /*
-    Cards take the lab's pane-C treatment at every glass level. They rest at a
-    30% tint so table rows and figures stay readable over a photo, then clear
-    to the lab's 12% on hover (see the hover block below). The tint uses
-    --surface-soft-rgb, so a dark canvas still yields a dark pane.
+    The cards carry the water lens at every glass level: a clear pane with a
+    real bevel. Their tint and bevel are level-independent on purpose — they
+    hold figures and table rows over a photograph, so legibility is a floor
+    rather than a stop on the slider. The tint derives from the curve
+    (--glass-tint), and the bevel adds the optical edge: 48px wide, 20px deep
+    (strong water — a clear bend at the rim with a calm, legible middle), so
+    the pane reads as a thick lens without turning into a fish-eye.
+
+    `--lens-bevel` and `--lens-depth` are read back by the lens builder in
+    glass-lens.tsx, so the CSS stays the single source of truth for the
+    material: bevel is how wide the bent zone is, depth is how far the rim
+    pulls the backdrop inward at its strongest.
   */
+  :where(.card-soft, .card-kpi, .liquid-card) {
+    --lens-tint: var(--glass-tint);
+    --lens-bevel: 48px;
+    --lens-depth: 20px;
+    /*
+      Three paint layers under the content: the colour dye (water absorbing
+      the hue of what it wraps), a vertical scrim that thickens toward the
+      foot of the card, and a small smoked tint that keeps white figures off
+      a raw bright sky without fogging the backdrop.
+    */
+    background-image:
+      radial-gradient(
+        92% 76% at var(--water-dye-x) var(--water-dye-y),
+        color-mix(
+          in srgb,
+          var(--water-dye-color) calc(var(--water-dye-alpha) * 100%),
+          transparent
+        ),
+        transparent 70%
+      ),
+      linear-gradient(
+        184deg,
+        rgb(255 255 255 / var(--water-scrim-top)) 0%,
+        rgb(255 255 255 / var(--water-scrim-mid)) 58%,
+        rgb(255 255 255 / var(--water-scrim-foot)) 100%
+      ),
+      linear-gradient(
+        rgb(9 16 28 / calc(var(--glass-shade) * 1.1)),
+        rgb(9 16 28 / calc(var(--glass-shade) * 1.1))
+      );
+  }
+
   .card-soft {
-    --shadow-drop: 0 18px 44px -36px rgb(var(--surface-shadow-rgb) / 0.45);
+    --shadow-drop: 0 22px 50px -34px rgb(var(--surface-shadow-rgb) / 0.52);
     border-radius: 22px;
-    background: rgb(var(--surface-soft-rgb) / 0.3);
-    backdrop-filter: var(
-      --bf-off,
-      saturate(1.2) brightness(1.02) contrast(1.04)
-    );
+    background-color: rgb(var(--surface-soft-rgb) / var(--lens-tint));
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.95),
+      inset 0 1px 0 rgb(255 255 255 / 0.62),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.22),
+      inset 0 -30px 34px -28px rgb(var(--surface-shadow-rgb) / 0.28),
       var(--shadow-drop);
   }
 
   .card-kpi {
-    --shadow-drop: 0 26px 54px -40px rgb(var(--surface-shadow-rgb) / 0.55);
+    --lens-bevel: 48px;
+    --lens-depth: 20px;
+    --shadow-drop: 0 30px 60px -38px rgb(var(--surface-shadow-rgb) / 0.6);
     border-radius: 24px;
-    background: rgb(var(--surface-soft-rgb) / 0.3);
-    backdrop-filter: var(
-      --bf-off,
-      saturate(1.2) brightness(1.02) contrast(1.04)
-    );
+    background-color: rgb(var(--surface-soft-rgb) / var(--lens-tint));
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.95),
-      inset 0 -22px 32px -26px rgb(var(--surface-shadow-rgb) / 0.22),
+      inset 0 1px 0 rgb(255 255 255 / 0.68),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.24),
+      inset 0 -34px 38px -30px rgb(var(--surface-shadow-rgb) / 0.3),
       var(--shadow-drop);
   }
 
   /* ---------- Liquid card ---------- */
 
   /*
-    Standalone liquid pane: same pane-C recipe as the data cards, on a larger
-    28px radius, with a soft shadow term along the bottom edge for depth.
-    It joins the shared group above (isolation) and takes the card lens from
-    liquid.css in Chromium; other browsers keep the tint and grade.
+    Standalone liquid pane: same recipe as the data cards on a larger 28px
+    radius, with the deeper hero bevel. It joins the shared group above
+    (isolation) and takes its lens from liquid.css.
   */
   .liquid-card {
+    --lens-bevel: 48px;
+    --lens-depth: 20px;
     border-radius: 28px;
-    background: rgb(var(--surface-soft-rgb) / 0.3);
-    backdrop-filter: var(
-      --bf-off,
-      saturate(1.2) brightness(1.02) contrast(1.04)
-    );
+    background-color: rgb(var(--surface-soft-rgb) / var(--lens-tint));
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.95),
-      inset 0 -2px 4px -1px rgb(var(--surface-shadow-rgb) / 0.18),
-      0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.55);
+      inset 0 1px 0 rgb(255 255 255 / 0.64),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.24),
+      inset 0 -34px 38px -30px rgb(var(--surface-shadow-rgb) / 0.28),
+      0 38px 84px -34px rgb(var(--surface-shadow-rgb) / 0.6);
   }
 
   /*
-    Pane-C specular rim: a 2px band, brightest along the top and dimmer down
-    the sides, so the cards read as a curved water surface. The Appearance
-    border colour and strength do NOT drive this — it is part of the glass.
+    Pane-C specular rim: a 2px band, brightest along the top, dimmer down the
+    sides, with a soft glint at the foot. The direction matters more than the
+    strength: a uniform white outline is the fake-glass tell, a top-weighted
+    one reads as a lit edge. The Appearance border strength drives the rim,
+    so the slider affects cards too.
   */
   :where(.card-soft, .card-kpi, .liquid-card)::after {
     content: "";
@@ -118,10 +256,10 @@
     padding: 2px;
     background: linear-gradient(
       180deg,
-      rgb(255 255 255 / 0.95),
-      rgb(255 255 255 / 0.22) 42%,
-      rgb(255 255 255 / 0.4) 78%,
-      rgb(255 255 255 / 0.65)
+      rgb(255 255 255 / calc(0.8 * var(--glass-specular, 1))),
+      rgb(255 255 255 / calc(0.18 * var(--glass-specular, 1))) 42%,
+      rgb(255 255 255 / calc(0.26 * var(--glass-specular, 1))) 78%,
+      rgb(255 255 255 / calc(0.42 * var(--glass-specular, 1)))
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -135,30 +273,142 @@
   }
 
   /*
-    Hover: the pane clears to the lab's 12% tint and the rim brightens, so the
-    water shows only while the card is being touched. Resting cards keep the
-    readable 30% tint. The lens grade intensifies in liquid.css.
+    Touch light. A pointer over the pane is "touching water": a soft light
+    follows the cursor (--mx/--my are written by water-touch.tsx) and a ring
+    expands once from that point. The linear layer is the old sheen sweep, so
+    a keyboard-controlled card still gets a surface response on hover.
+    Motion is disabled by motion.css under reduced-motion.
   */
+  :where(.card-soft, .card-kpi, .liquid-card)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(
+        circle 260px at var(--mx, 50%) var(--my, 50%),
+        rgb(255 255 255 / 0.24),
+        rgb(255 255 255 / 0.08) 48%,
+        transparent 74%
+      ),
+      radial-gradient(
+        circle 200px at var(--mx, 50%) var(--my, 50%),
+        transparent 52%,
+        rgb(255 255 255 / 0.2) 57%,
+        transparent 65%
+      ),
+      linear-gradient(
+        115deg,
+        transparent 34%,
+        rgb(255 255 255 / 0.2) 47%,
+        rgb(255 255 255 / 0.07) 57%,
+        transparent 70%
+      );
+    background-size:
+      0 0,
+      0 0,
+      240% 100%;
+    background-position:
+      center,
+      center,
+      140% 0;
+    background-repeat: no-repeat;
+    opacity: 0;
+  }
+
+  @keyframes water-touch {
+    from {
+      background-size:
+        0 0,
+        0 0,
+        240% 100%;
+      opacity: 0;
+    }
+
+    45% {
+      opacity: 1;
+    }
+
+    to {
+      background-size:
+        100% 100%,
+        100% 100%,
+        240% 100%;
+      opacity: 1;
+    }
+  }
+
   @media (hover: hover) {
     :where(.card-soft, .card-kpi, .liquid-card) {
       transition:
-        transform 220ms ease,
-        box-shadow 220ms ease,
-        background-color 220ms ease;
+        transform var(--dur-settle) var(--ease-water),
+        box-shadow var(--dur-settle) ease,
+        background-color var(--dur-settle) ease;
+    }
+
+    :where(.card-soft, .card-kpi, .liquid-card)::before {
+      transition:
+        background-position 900ms var(--ease-water),
+        opacity 300ms ease;
+    }
+
+    /*
+      Hero KPIs paint the glass pane as an aria-hidden sibling behind the
+      content, so the pane itself is never hovered while the pointer is over
+      the numbers. `.card-kpi-host` is the section that owns the card: it
+      takes the lift and forwards the hover state to its pane. Without this
+      the hero cards only reacted over the uncovered right-hand area.
+    */
+    .card-kpi-host {
+      transition: transform var(--dur-settle) var(--ease-water);
     }
 
     :where(.card-soft, .card-kpi, .liquid-card):hover {
-      background-color: rgb(var(--surface-soft-rgb) / 0.12);
+      /*
+        Touching the pane: the colour grade pushes up 12% so the water picks
+        up more of the scene under the pointer, and the fill eases down a
+        further two points.
+      */
+      --water-saturate: 1.12;
+      background-color: rgb(var(--surface-soft-rgb) / 0.05);
       transform: translateY(-2px);
     }
 
-    :where(.card-soft, .card-kpi, .liquid-card):hover::after {
+    .card-kpi-host:hover {
+      transform: translateY(-2px);
+    }
+
+    .card-kpi-host:hover > .card-kpi {
+      --water-saturate: 1.12;
+      background-color: rgb(var(--surface-soft-rgb) / 0.05);
+      /* The host already lifts; the pane must not lift a second time. */
+      transform: none;
+    }
+
+    :where(.card-soft, .card-kpi, .liquid-card):hover::before,
+    .card-kpi-host:hover > .card-kpi::before {
+      background-size:
+        100% 100%,
+        100% 100%,
+        240% 100%;
+      background-position:
+        center,
+        center,
+        -40% 0;
+      opacity: 1;
+      animation: water-touch 720ms var(--ease-water);
+    }
+
+    :where(.card-soft, .card-kpi, .liquid-card):hover::after,
+    .card-kpi-host:hover > .card-kpi::after {
       background: linear-gradient(
         180deg,
-        rgb(255 255 255 / 1),
-        rgb(255 255 255 / 0.35) 42%,
-        rgb(255 255 255 / 0.5) 78%,
-        rgb(255 255 255 / 0.8)
+        rgb(255 255 255 / calc(0.9 * var(--glass-specular, 1))),
+        rgb(255 255 255 / calc(0.26 * var(--glass-specular, 1))) 42%,
+        rgb(255 255 255 / calc(0.36 * var(--glass-specular, 1))) 78%,
+        rgb(255 255 255 / calc(0.52 * var(--glass-specular, 1)))
       );
     }
   }
@@ -171,9 +421,9 @@
   */
   .card-hover {
     transition:
-      transform 220ms ease,
-      box-shadow 220ms ease,
-      background-color 220ms ease;
+      transform var(--dur-settle) var(--ease-water),
+      box-shadow var(--dur-settle) ease,
+      background-color var(--dur-settle) ease;
   }
 
   @media (hover: hover) {
@@ -190,7 +440,10 @@
   /*
     One glass body per navigation. `use-liquid-nav` measures the active item
     and writes --nav-x/-y/-w/-h, so the surface flows between destinations
-    instead of cross-fading two separate pills.
+    instead of cross-fading two separate pills. It moves on --dur-flow with
+    --ease-water: the box overshoots the target and wobbles back, and the
+    squish keyframes below stretch it while it travels — a body of water
+    arriving somewhere, not a rectangle sliding to it.
   */
   .nav-liquid {
     position: absolute;
@@ -206,22 +459,26 @@
           calc(var(--glass-edge) * var(--glass-hairline))
       );
     background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
+    background-image: linear-gradient(
+      rgb(9 16 28 / calc(var(--glass-shade) * 1.1)),
+      rgb(9 16 28 / calc(var(--glass-shade) * 1.1))
+    );
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / var(--glass-edge)),
-      0 12px 26px -20px rgb(var(--surface-shadow-rgb) / 0.5);
+      inset 0 1px 0 rgb(255 255 255 / 0.72),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.18),
+      0 14px 30px -20px rgb(var(--surface-shadow-rgb) / 0.55);
     opacity: 0;
     pointer-events: none;
     backdrop-filter: var(
       --bf-off,
-      blur(calc(var(--glass-blur) * 0.8))
-        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-        contrast(var(--glass-contrast))
+      saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
     transition:
-      top 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
-      left 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
-      width 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
-      height 520ms cubic-bezier(0.34, 1.26, 0.64, 1),
+      top var(--dur-flow) var(--ease-water),
+      left var(--dur-flow) var(--ease-water),
+      width var(--dur-flow) var(--ease-water),
+      height var(--dur-flow) var(--ease-water),
       opacity 200ms ease;
     will-change: top, left, width, height;
   }
@@ -231,13 +488,12 @@
   }
 
   [data-nav-moving="true"] > .nav-liquid {
-    animation: liquid-squish 520ms cubic-bezier(0.34, 1.26, 0.64, 1);
+    animation: liquid-squish var(--dur-flow) var(--ease-water);
   }
 
   /* ---------- Chip ---------- */
 
   .chip {
-    --blur-k: 0.55;
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -247,26 +503,40 @@
         var(--glass-border-rgb) /
           calc(var(--glass-edge) * var(--glass-hairline))
       );
-    background: rgb(var(--surface-rgb) / min(calc(var(--glass-tint) + 0.02), 1));
+    /*
+      Chips carry 11.5px labels, so they need a floor the shell does not.
+      At level 100 this lands on 0.14 (tint 0.06 + 0.02 + 0.06), while every
+      level at or below 55 keeps its old value because g-liquid is zero there:
+      no step, and no chunk taken out of the mid-range.
+    */
+    background: rgb(
+      var(--surface-rgb) /
+        min(calc(var(--glass-tint) + 0.02 + var(--g-liquid) * 0.06), 1)
+    );
+    background-image: linear-gradient(
+      rgb(9 16 28 / calc(var(--glass-shade) * 0.9)),
+      rgb(9 16 28 / calc(var(--glass-shade) * 0.9))
+    );
     padding: 0.3rem 0.65rem;
     font-size: 11.5px;
     font-weight: 600;
     color: var(--color-ink);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
     backdrop-filter: var(
       --bf-off,
-      blur(calc(var(--glass-blur) * var(--blur-k, 1)))
-        saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-        contrast(var(--glass-contrast))
+      saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
     transition:
-      background 180ms ease,
-      border-color 180ms ease;
+      background var(--dur-quick) ease,
+      border-color var(--dur-quick) ease;
   }
 
   .chip:hover {
+    /* +0.12 over rest at Liquid: the pill swells toward the reader. */
     background: rgb(
       var(--surface-rgb) /
-        min(calc(var(--glass-tint) + 0.14), 1)
+        min(calc(var(--glass-tint) + 0.14 + var(--g-liquid) * 0.06), 1)
     );
   }
 }

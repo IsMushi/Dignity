@@ -1,47 +1,79 @@
 /*
   Glass level (0-100) -> every glass token.
-  Gentle until 60 so the default stays readable, then opens up for the last
+  Gentle until 55 so the default stays readable, then opens up for the last
   stretch (Liquid). The piecewise min/max maths lives ONCE in the three
   normalized values below; each token is a plain linear mix of them.
 
-    --g-base   0 → 1 over level 0-60
-    --g-liquid 0 → 1 over level 60-100
-    --g-deep   0 → 1 over level 85-100
+    --g-base   0 → 1 over level 0-55
+    --g-liquid 0 → 1 over level 55-100
+    --g-deep   0 → 1 over level 75-100
 
-  Default is 100 (full Liquid): every surface renders the clear optical
-  pane by default — the iOS-style "clear" Liquid Glass: almost no tint, no
-  frost, specular rim and refraction do the work, and the photographic
-  canvas shows straight through. The clear-end values follow the lab's
-  pane C recipe: 6% tint, saturation ~1.2, brightness 1.02, contrast 1.04.
-  Dial the Customize slider below 85 to bring back the frosted levels.
+  Default is 100 (full Liquid): every surface renders the water pane by
+  default — a clear tinted body, a refractive rim, a specular highlight, a
+  whisper of smoked glass and a colour dye that absorbs the hue of whatever
+  the surface wraps. Saturation sits at 1.12, brightness 1.02, contrast 1.04.
+  Dial the Customize slider below 75 to bring back the heavier levels.
+
+  NO BLUR, NO FROST, on purpose. The material is clear water: the backdrop
+  stays sharp through the middle of the pane and only bends at the curved
+  rim. blur() is frosted glass — it greys out the scene the pane is supposed
+  to reveal — so it appears nowhere in this app. Legibility comes from the
+  whisper of tint (6% shell / 14% top bar / 12% menus / 6% cards at level
+  100), a small smoked tint, the colour dye, the soft card scrim, the
+  specular rim and a faint text halo instead. Do not raise the fill to chase
+  contrast; that is how water turns into plastic.
 */
 @layer base {
   :root {
     --glass-level: 100;
 
-    --g-base: calc(min(var(--glass-level), 60) / 60);
-    --g-liquid: calc(max(var(--glass-level) - 60, 0) / 40);
-    --g-deep: calc(max(var(--glass-level) - 85, 0) / 15);
+    /* Snapshot of the theme's muted ink before glass surfaces darken it;
+       without this, the override would reference itself (a cycle). */
+    --color-muted-base: var(--color-muted);
 
-    /* Hero / shell glass — no frost anywhere: blur is permanently zero, the
-       glass read comes from tint, saturation, rim, and refraction only. */
+    --g-base: calc(min(var(--glass-level), 55) / 55);
+    --g-liquid: calc(max(var(--glass-level) - 55, 0) / 45);
+    --g-deep: calc(max(var(--glass-level) - 75, 0) / 25);
+
+    /*
+      No diffusion (see header). Kept as a named seam so a future material
+      can reintroduce it from one place; every chain resolves it to zero.
+    */
     --glass-blur: 0px;
-    /* Clear Liquid follows the lab's pane C recipe: saturation stays near
-       1.2 instead of a heavy grade, so the photographic canvas keeps its own
-       colour and the lens — not the grade — supplies the pop. */
+    /*
+      A whisper of smoked glass. Clear water over a bright photograph leaves
+      white figures floating, so the last stretch of the curve darkens the
+      pane instead of fogging it: 0 below 75, ~12% at Liquid. This is a tint,
+      not a scrim — it deepens the water and lifts the text contrast without
+      scattering the backdrop.
+    */
+    --glass-shade: calc(var(--g-liquid) * 0.08 + var(--g-deep) * 0.04);
+    /*
+      The "water" lever. A slight colour concentration (1.12 at Liquid) keeps
+      the scene vivid without the posterised wash a heavy grade produced. The
+      hover lever below pushes it further when the water is touched.
+    */
     --glass-saturate: calc(
-      1 + var(--g-base) * 0.04 + var(--g-liquid) * 0.1 + var(--g-deep) * 0.06
-    );
-    /* Clear (iOS-style): at the top end the tint collapses toward the pane
-       being almost pure glass — 6% white at 100, matching pane C, no frost. */
-    --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.704);
-    --glass-tint-soft: calc(0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.63);
-    --glass-bar: calc(
-      0.96 - var(--g-base) * 0.12 - min(var(--g-liquid), 0.625) * 0.784 -
-        var(--g-deep) * 0.26
+      1 + var(--g-base) * 0.06 + var(--g-liquid) * 0.06
     );
     /*
-      Rim / border alpha. Softened and level-aware: frosted levels keep a
+      The fill is a whisper, not a sheet. 6% at Liquid: just enough to keep
+      the pane from being a pure window, with the dye and the rim doing the
+      material work. Anything higher starts to read white over the scene,
+      which is exactly the frost this material is not.
+    */
+    --glass-tint: calc(0.92 - var(--g-base) * 0.156 - var(--g-liquid) * 0.704);
+    --glass-tint-soft: calc(
+      0.78 - var(--g-base) * 0.132 - var(--g-liquid) * 0.608
+    );
+    /* A little more than the shell: the top bar carries the nav labels and
+       sits over whatever scrolls beneath it. 14% at Liquid. */
+    --glass-bar: calc(
+      0.96 - var(--g-base) * 0.12 - var(--g-liquid) * 0.45 -
+        var(--g-deep) * 0.25
+    );
+    /*
+      Rim / border alpha. Softened and level-aware: the heavier levels keep a
       defined edge (~0.85 at 0), while clear Liquid pulls the rim back to
       ~0.30 so surfaces read as borderless glass rather than sticker outlines.
       Border alphas pair this with --glass-hairline below.
@@ -50,9 +82,18 @@
       0.85 - var(--g-base) * 0.1 - var(--g-liquid) * 0.4 - var(--g-deep) * 0.05
     );
     /*
+      Specular floor. The rim is light on the material, not a border, so it
+      keeps a glint even when the Appearance border strength is dialled to
+      its minimum: 0.4 at strength 1, 1 at strength 100. Hairlines still
+      follow the border strength alone.
+    */
+    --glass-specular: calc(
+      0.4 + var(--glass-border-strength, 100) * 0.006
+    );
+    /*
       Hairline strength — every border in the app derives from this one token
       (surface rims, card/chip outlines, utility edges). Full strength until
-      85, then dissolves to nothing at 100 so clear Liquid surfaces read
+      75, then dissolves to nothing at 100 so clear Liquid surfaces read
       borderless everywhere, not just on one route. Consumers multiply their
       own per-surface factor into this.
     */
@@ -63,7 +104,36 @@
     --glass-brightness: 1.02;
     --glass-contrast: 1.04;
     --glass-sheen: calc(0.08 + min(var(--glass-level), 70) * 0.004);
-    --glass-panel: calc(0.98 - var(--g-base) * 0.09 - var(--g-liquid) * 0.27);
+    /*
+      Dropdown menus carry 14px labels over live content, so they take the
+      thickest fill of any surface: 12% at Liquid. Folding the old Liquid
+      override into the curve is what removes the alpha step at the Liquid
+      boundary: everything now interpolates, nothing snaps.
+    */
+    --glass-panel: calc(0.98 - var(--g-base) * 0.09 - var(--g-liquid) * 0.77);
+
+    /*
+      Colour absorption. The pane carries a soft dye pulled toward whatever
+      the surface is wrapping: the brand by default, copper behind the coin
+      artwork, brand blue behind the credit wallet. `saturate()` does the
+      honest work (it lifts the real backdrop), this layer is the art
+      direction on top of it — 9% at rest so it reads as tinted water, not a
+      painted card. Per-surface overrides live inline in the JSX.
+    */
+    --water-dye-color: var(--color-brand);
+    --water-dye-alpha: 0.09;
+    --water-dye-x: 78%;
+    --water-dye-y: 42%;
+
+    /* Local lever a surface uses to push colour on hover / press. */
+    --water-saturate: 1;
+
+    /* Vertical scrim for the figures at the foot of a card. Barely there —
+       it keeps the last table rows off the rawest part of the photograph,
+       never paints the card white. */
+    --water-scrim-top: 0;
+    --water-scrim-mid: 0.015;
+    --water-scrim-foot: 0.04;
 
     /*
       Data cards follow the hero cards (+0.06) instead of using their own
@@ -74,7 +144,7 @@
     --glass-soft-tint-soft: min(calc(var(--glass-tint-soft) + 0.06), 1);
     --glass-soft-sheen: calc(0.95 - var(--g-liquid) * 0.7);
 
-    /* Backdrop wash: the colour bands fade in over 85-100 so the clear Liquid
+    /* Backdrop wash: the colour bands fade in over 75-100 so the clear Liquid
        panes have chromatic variation behind them to bend and tint. Capped at
        0.35: at full strength the bands read as a coloured smudge (a shadow)
        under the clear KPI panes once the lens saturates them; the tint has to

@@ -16,6 +16,7 @@ import {
   isLiquidGlass,
   parseGlassLevel,
 } from "@/lib/appearance";
+import { isLensSupported } from "@/lib/lens-map";
 import { createPreferenceStore } from "@/lib/preferences";
 
 const glassStore = createPreferenceStore({
@@ -64,15 +65,7 @@ export function GlassProvider({
     in JS; CSS @supports cannot tell them apart.
   */
   useEffect(() => {
-    const brands = (
-      navigator as Navigator & {
-        userAgentData?: { brands?: Array<{ brand: string }> };
-      }
-    ).userAgentData?.brands;
-    const chromium =
-      brands?.some((entry) => /Chromium|Google Chrome|Microsoft Edge/i.test(entry.brand)) ??
-      /Chrome\/|Chromium\/|Edg\//.test(navigator.userAgent);
-    document.documentElement.dataset.lens = chromium ? "on" : "off";
+    document.documentElement.dataset.lens = isLensSupported() ? "on" : "off";
   }, []);
 
   const value = useMemo(

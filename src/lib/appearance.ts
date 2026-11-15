@@ -1,12 +1,13 @@
 export const GLASS_COOKIE = "dignity_glass";
 export const GLASS_STORAGE_KEY = "dignity_glass";
 export const DEFAULT_GLASS_LEVEL = 100;
-export const LIQUID_GLASS_MIN = 85;
+/* Matches --g-deep in glass-curve.css (max(level - 75, 0) / 25). */
+export const LIQUID_GLASS_MIN = 75;
 
 export const GLASS_PRESETS = [
   { label: "Solid", value: 0 },
-  { label: "Soft", value: 33 },
-  { label: "Balanced", value: 66 },
+  { label: "Soft", value: 28 },
+  { label: "Balanced", value: 55 },
   { label: "Liquid", value: 100 },
 ] as const;
 

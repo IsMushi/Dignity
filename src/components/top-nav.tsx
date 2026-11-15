@@ -49,7 +49,7 @@ export function TopNav() {
                 className={
                   isActive
                     ? "focus-ring relative z-10 inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[12.5px] font-semibold text-brand"
-                    : "focus-ring glass-hover relative z-10 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-ink/75 transition hover:text-brand"
+                    : "focus-ring glass-hover relative z-10 rounded-full px-3.5 py-2 text-[12.5px] font-medium text-ink/85 transition hover:text-brand"
                 }
               >
                 {isActive ? <AppIcon name={item.icon} className="h-4 w-4" /> : null}
@@ -62,7 +62,7 @@ export function TopNav() {
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <Link
             href="/#apps"
-            className="focus-ring glass-hover hidden items-center gap-2 rounded-full px-3 py-2 text-[12.5px] font-medium text-ink/75 transition hover:text-brand sm:inline-flex"
+            className="focus-ring glass-hover hidden items-center gap-2 rounded-full px-3 py-2 text-[12.5px] font-medium text-ink/85 transition hover:text-brand sm:inline-flex"
           >
             <LayoutGrid className="h-4 w-4" strokeWidth={1.7} aria-hidden="true" />
             Apps

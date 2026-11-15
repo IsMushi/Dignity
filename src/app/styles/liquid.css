@@ -1,43 +1,63 @@
 /*
-  Liquid (85-100): the material switches from frosted white to a clear optical
-  pane. The backdrop stays readable, nav and panels stay borderless, cards
-  keep their pane-C rim, and Chromium bends the backdrop around the card and
-  KPI bezels with the SVG lens filter.
+  Liquid (75-100): the material is clear water. There is no frost — the pane
+  stays sharp through the middle and only bends the backdrop at its rim, and
+  the nav and panels stay borderless.
 */
 
 @layer components {
   /* ---------- Clear pane ---------- */
 
-  /* Full liquid: clear optical panes. Surfaces without an SVG lens — every
-     non-Chromium browser, plus chips — keep no blur at all: the pane is
-     defined by tint and its shadow alone, so the photographic canvas shows
-     straight through (the iOS clear behaviour). Cards carry their own
-     level-independent pane-C rules in surfaces.css. */
+  /*
+    Liquid keeps the pane clear: the material is defined by its tint, its
+    colour dye and its bevel rather than by a white wash or a frost. Surfaces
+    without a lens of their own — every non-Chromium browser, plus chips —
+    keep the plain colour grade.
+
+    There are deliberately no background overrides in this section. Liquid
+    used to hard-code them (0.22 shell / 0.18 bar / 0.26 panel / 0.28 chip)
+    while the curve ramped underneath, so the alpha SNAPPED at the old 85
+    threshold: the nav measured 0.42 at level 84 and 0.18 at 85, a 2.3x jump
+    in one step. The curve now produces every Liquid background itself
+    (glass-curve.css), so Liquid interpolates like every other level. What
+    remains here is Liquid-only: the deeper shadows and the chip rim.
+  */
   [data-glass-liquid="true"] :where(.glass-panel, .chip) {
     backdrop-filter: var(
       --bf-off,
-      blur(0px) saturate(var(--glass-saturate)) brightness(1.06) contrast(1.04)
-    );
-  }
-
-  [data-glass-liquid="true"] .glass {
-    backdrop-filter: var(
-      --bf-off,
-      blur(0px) saturate(var(--glass-saturate))
+      saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
         brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
-    background: rgb(var(--surface-rgb) / 0.16);
-    box-shadow: 0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.72);
   }
 
-  [data-glass-liquid="true"] .glass.glass-bar {
-    background: rgb(var(--surface-rgb) / 0.14);
+  /*
+    `:where()` here is load-bearing, not style. `.glass` used to be written
+    as a bare class at (0,2,0), which beat the lens rule's (0,1,0) below — so
+    the shell dropped the lens the instant the level crossed into Liquid and
+    picked it back up underneath, a visible flip at the threshold. Zeroing the
+    specificity lets the lens win on source order as soon as `data-lens-bound`
+    is set, which is what glass-lens.tsx builds a map for: its SURFACES list
+    names `.glass` and `.glass-panel` and excludes only chips. This rule still
+    beats surfaces.css's bare :where() group whenever there is no map to apply
+    — Firefox, Safari, reduced-transparency, and the pre-bind first paint.
+  */
+  [data-glass-liquid="true"] :where(.glass) {
+    backdrop-filter: var(
+      --bf-off,
+      saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
+    );
+    box-shadow:
+      inset 0 1px 0
+        rgb(255 255 255 / calc(0.7 * var(--glass-specular, 1))),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.22),
+      0 34px 78px -36px rgb(var(--surface-shadow-rgb) / 0.72);
   }
 
   [data-glass-liquid="true"] .glass-panel {
-    background: rgb(var(--surface-rgb) / 0.2);
     box-shadow:
-      inset 0 -2px 4px -1px rgb(var(--surface-shadow-rgb) / 0.2),
+      inset 0 1px 0
+        rgb(255 255 255 / calc(0.65 * var(--glass-specular, 1))),
+      inset 0 -1px 0 rgb(var(--surface-shadow-rgb) / 0.2),
       0 38px 80px -26px rgb(var(--surface-shadow-rgb) / 0.62);
   }
 
@@ -47,112 +67,56 @@
         var(--glass-border-rgb) /
           calc(var(--glass-hairline) * 0.72)
       );
-    background: rgb(var(--surface-rgb) / 0.22);
   }
 
-  /* The KPI artwork sits above the glass normally; at Liquid it drops behind
-     the pane so the lens bends the coins and wallet at the bezel. */
+  /*
+    The hero artwork is an illustration, not part of the scene the glass looks
+    through. It sits above the pane so the fill never washes it out — it is
+    deliberately never part of what the lens bends.
+  */
   .kpi-art {
     z-index: 3;
   }
 
-  [data-glass-liquid="true"] .kpi-art {
-    z-index: 1;
-  }
-
-  /* ---------- Chromium lens ---------- */
-
-  /* Chromium only: bend the backdrop through the rounded bezel. The KPI map
-     is tuned for the card aspect (strongest bend); data panels take the
-     gentler surface lens and the wide shell chrome the mildest one. Firefox
-     and Safari parse url() but paint no backdrop, so data-lens keeps them on
-     the tint fallback above.
-
-     The card rules are NOT gated on data-glass-liquid: the pane-C treatment
-     applies at every glass level. */
-  /* Cards use the pane-C grade at every level, so their lens chain carries
-     the same fixed saturate/brightness/contrast as the lab rather than the
-     level-driven --glass-* tokens. */
-  [data-lens="on"] .card-kpi {
-    backdrop-filter: var(
-      --bf-off,
-      url(#dignity-lens) saturate(1.2) brightness(1.02) contrast(1.04)
-    );
-  }
-
-  [data-lens="on"] .card-soft {
-    backdrop-filter: var(
-      --bf-off,
-      url(#dignity-surface-lens) saturate(1.2) brightness(1.02) contrast(1.04)
-    );
-  }
+  /* ---------- Water lens ---------- */
 
   /*
-    The liquid card is a card, not a panel, so it takes the KPI lens: that
-    map is the one tuned for a card aspect, and stretching the gentler
-    surface map across it would flatten the corners.
+    Chromium only: bend the backdrop through a bevel built for the element's
+    own size, so the bent zone stays 20-26px wide on a hero card and on a
+    data panel alike. `--lens` is written by glass-lens.tsx; `data-lens-bound`
+    only appears once a map exists, so the plain grade in surfaces.css is what
+    paints before (and instead, in every other browser).
+
+    With no frost the lens IS the material: the backdrop stays sharp
+    through the middle of the pane and only bends where the bevel pulls it,
+    which is how real water behaves. The fill in glass-curve.css keeps the
+    figures legible over whatever the lens lets through. Cards and shell
+    share one chain: everything that gets a map takes the same grade.
   */
-  [data-lens="on"] .liquid-card {
+  :where(.card-soft, .card-kpi, .liquid-card)[data-lens-bound],
+  :where(.glass, .glass-panel)[data-lens-bound] {
     backdrop-filter: var(
       --bf-off,
-      url(#dignity-lens) saturate(1.2) brightness(1.02) contrast(1.04)
+      var(--lens)
+        saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
     );
   }
 
   /*
-    Hover: the pane clears to the lab's 12% tint, so the lens gets a stronger
-    grade to sell the water. Resting cards keep the 30% tint at 1.2.
+    Hover: the grade lifts a little so the surface answers the pointer
+    without giving up the figures.
   */
   @media (hover: hover) {
-    :where(.card-soft, .card-kpi, .liquid-card):hover {
+    :where(.card-soft, .card-kpi, .liquid-card)[data-lens-bound]:hover,
+    .card-kpi-host:hover > .card-kpi[data-lens-bound] {
       backdrop-filter: var(
         --bf-off,
-        saturate(1.45) brightness(1.05) contrast(1.04)
+        var(--lens)
+          saturate(calc(var(--glass-saturate) * var(--water-saturate, 1)))
+          brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
       );
     }
-
-    [data-lens="on"] :where(.card-kpi, .liquid-card):hover {
-      backdrop-filter: var(
-        --bf-off,
-        url(#dignity-lens) saturate(1.45) brightness(1.05) contrast(1.04)
-      );
-    }
-
-    [data-lens="on"] .card-soft:hover {
-      backdrop-filter: var(
-        --bf-off,
-        url(#dignity-surface-lens) saturate(1.45) brightness(1.05) contrast(1.04)
-      );
-    }
-  }
-
-  [data-glass-liquid="true"][data-lens="on"] .glass {
-    backdrop-filter: var(
-      --bf-off,
-      url(#dignity-chrome-lens) saturate(var(--glass-saturate))
-        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
-    );
-  }
-
-  /* Dropdowns (Customize, business menu) used to keep the plain blur, so at
-     Liquid they read as a frosted white box instead of glass. Chromium gets
-     the surface lens here too, which is what the comment above promised. */
-  [data-glass-liquid="true"][data-lens="on"] .glass-panel {
-    backdrop-filter: var(
-      --bf-off,
-      url(#dignity-surface-lens) saturate(var(--glass-saturate))
-        brightness(var(--glass-brightness)) contrast(var(--glass-contrast))
-    );
-  }
-
-  /* Chips are too small for the displacement map, but they still lose the
-     blur in Chromium: saturation and contrast alone keep them crisp glass. */
-  [data-glass-liquid="true"][data-lens="on"] .chip {
-    backdrop-filter: var(
-      --bf-off,
-      saturate(var(--glass-saturate)) brightness(var(--glass-brightness))
-        contrast(var(--glass-contrast))
-    );
   }
 }
 

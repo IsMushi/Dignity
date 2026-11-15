@@ -55,7 +55,7 @@ export function AppRail() {
                   className={
                     isActive
                       ? "focus-ring relative z-10 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-semibold text-brand"
-                      : "focus-ring glass-hover relative z-10 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-ink/75 transition hover:text-brand"
+                      : "focus-ring glass-hover relative z-10 flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-ink/85 transition hover:text-brand"
                   }
                 >
                   <AppIcon name={item.icon} className="h-[18px] w-[18px]" />
@@ -73,7 +73,7 @@ export function AppRail() {
 
         <Link
           href="/#apps"
-          className="focus-ring glass-hover flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-ink/75 transition hover:text-brand"
+          className="focus-ring glass-hover flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-ink/85 transition hover:text-brand"
         >
           <AppIcon name="apps" className="h-[18px] w-[18px]" />
           <span>Apps</span>
