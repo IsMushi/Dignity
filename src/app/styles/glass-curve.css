@@ -43,11 +43,12 @@
     /*
       A whisper of smoked glass. Clear water over a bright photograph leaves
       white figures floating, so the last stretch of the curve darkens the
-      pane instead of fogging it: 0 below 75, ~12% at Liquid. This is a tint,
-      not a scrim — it deepens the water and lifts the text contrast without
-      scattering the backdrop.
+      pane instead of fogging it: 0 below 75, 6% at Liquid. This is a tint,
+      not a scrim — it deepens the water just enough to seat the text without
+      the pane reading grey. Half the earlier value on purpose: the darkness
+      is a hint, and the rim does the rest.
     */
-    --glass-shade: calc(var(--g-liquid) * 0.08 + var(--g-deep) * 0.04);
+    --glass-shade: calc(var(--g-liquid) * 0.04 + var(--g-deep) * 0.02);
     /*
       The "water" lever. A slight colour concentration (1.12 at Liquid) keeps
       the scene vivid without the posterised wash a heavy grade produced. The
